@@ -10,10 +10,7 @@ if __name__ == '__main__':
     # All the stuff inside your window.
 
 
-    image = Image.open("slot.png")
-    image.thumbnail((200, 200))
-    bio = io.BytesIO()
-    image.save(bio, format="PNG")
+
     # window["-IMAGE-"].update(data=bio.getvalue())
 
     col1 = [[sg.Image(data=bio.getvalue())], [sg.Button('arm1', size=(5, 1.3))], [sg.Text('', key="text1")]]

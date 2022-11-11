@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Dict, Optional
+from typing import Dict, Optional, Tuple
 
 from distribution import DistributionABC, GaussianDistribution
 
@@ -30,5 +30,12 @@ class MabProblem:
 
         return result
 
-    def display_results(self):
-        print(dict(self._results))
+    @property
+    def arms_ids(self) -> Tuple[int]:
+        return tuple(self._arms.keys())
+
+    def display_results(self, playing_window):
+        for arm_id in self.arms_ids:
+            arm_string_results = [str(r) for r in self._results[arm_id]]
+            playing_window[f'arm_text{arm_id}'].update('\n'.join(arm_string_results))
+
