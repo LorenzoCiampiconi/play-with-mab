@@ -1,10 +1,26 @@
 from numpy.random import normal
-# Press the green button in the gutter to run the script.
+import PySimpleGUI as sg
 
-g_1 = normal(loc=0, scale=1)
 
-g_2 = normal(loc=2, scale=2)
+if __name__ == '__main__':
 
-g_3 = normal(loc=4, scale=5)
+    # sg.theme('DarkAmber')  # Add a touch of color
+    # All the stuff inside your window.
+    layout = [[sg.Text('Qui ci sará la slot')],
+              [sg.Button('arm1')],
+              [sg.Button('arm2')],
+              [sg.Button('arm3')]]
 
-g_4 = normal(loc=4.2, scale=10)
+    # Create the Window
+    window = sg.Window('Get rich with our MAB', layout)
+    # Event Loop to process "events" and get the "values" of the inputs
+    while True:
+        event, values = window.read()
+        if event == sg.WIN_CLOSED or event == 'Cancel':  # if user closes window or clicks cancel
+            break
+        if event == 'pull1':
+            samlpe
+        if event == 'pull2':
+            print('pull2')
+
+    window.close()
