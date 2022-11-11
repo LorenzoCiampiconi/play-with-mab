@@ -1,10 +1,7 @@
-from numpy.random import normal
-# Press the green button in the gutter to run the script.
-
-g_1 = normal(loc=0, scale=1)
-
-g_2 = normal(loc=2, scale=2)
-
-g_3 = normal(loc=4, scale=5)
-
-g_4 = normal(loc=4.2, scale=10)
+from distribution import GaussianDistribution
+from mab import MabProblem
+g_1 = GaussianDistribution(0,1)
+g_2 = GaussianDistribution(0.5,2)
+g_3 = GaussianDistribution(4,10)
+g_4 = GaussianDistribution(3,5)
+mab_problem = MabProblem({1: g_1, 2: g_2, 3: g_3, 4: g_4})
