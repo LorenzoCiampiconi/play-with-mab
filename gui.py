@@ -11,7 +11,8 @@ path = Path(__file__).parent
 
 
 class BarcelonaMabGUI:
-    slot_img = path / "slot.png"
+    slot_img_file = path / "slot.png"
+    button_img_file = path / "button2.png"
     arm_button_size = (5, 1.3)
     play_window_size = (1250, 800)
     results_font_size = ("helvetica", 25)
@@ -42,18 +43,21 @@ class BarcelonaMabGUI:
             arm_code = int(event_str[-1])
             return self.mab_problem.pull(arm_code)
 
-    def _get_layout_col_by_arm_id(self, arm_id):
+    def _get_layout_col_by_arm_id(self, arm_id) -> sg.Column:
+        slot_img = sg.Image(self.get_byte_64_image(self.slot_img_file))
+        button_img = self.get_byte_64_image(self.button_img_file, dim=(70, 100))
+
         arm_col = [
-            [sg.Image(self.get_byte_64_image(self.slot_img))],
-            [sg.Button(f'arm{arm_id}', size=self.arm_button_size)],
+            [slot_img],
+            [sg.Button(f'arm{arm_id}', size=self.arm_button_size, image_data=button_img)],
             [sg.Text('', key=f"arm_text{arm_id}", font=self.results_font_size)]
         ]
-        return arm_col
+        return sg.Column(arm_col, vertical_alignment='t', element_justification='c')
 
     def get_play_layout(self):
         layout = [
             [
-                sg.Column(self._get_layout_col_by_arm_id(arm_id), element_justification='c', vertical_alignment='t')
+                self._get_layout_col_by_arm_id(arm_id)
                 for arm_id in self.mab_problem.arms_ids
             ]
         ]
