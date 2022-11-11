@@ -53,7 +53,7 @@ class BarcelonaMabGUI:
     def get_play_layout(self):
         layout = [
             [
-                sg.Column(self._get_layout_col_by_arm_id(arm_id), element_justification='c', vertical_alignment='t')
+                sg.Column(self._get_layout_col_by_arm_id(arm_id), element_justification='c', vertical_alignment='t', expand_x=True, expand_y=True, key=f"col_{arm_id}")
                 for arm_id in self.mab_problem.arms_ids
             ]
         ]
@@ -68,8 +68,11 @@ class BarcelonaMabGUI:
             "Get rich with our MAB",
             layout,
             element_justification='c',
-            size=self.play_window_size
+            size=self.play_window_size,
+            finalize=True
         )
+        for arm_id in self.mab_problem.arms_ids:
+            window[f'col_{arm_id}'].Widget.configure(borderwidth=2, relief=sg.RELIEF_SOLID)
 
         while True:
             event, values = window.read()
