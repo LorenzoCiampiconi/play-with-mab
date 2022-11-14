@@ -56,3 +56,7 @@ class MABProblem:
         for arm_id in self.arms_ids:
             arm_string_results = [str(r) for r in self._rewards[arm_id]]
             playing_window[f"arm_text{arm_id}"].update("\n".join(arm_string_results))
+
+    @property
+    def rewards(self):
+        return self._rewards

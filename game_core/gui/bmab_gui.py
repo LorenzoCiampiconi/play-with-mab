@@ -77,7 +77,12 @@ class BarcelonaMabGUI(BaseGUIABC):
 
     def event_loop_stem(self, event, window):
         self.pull_by_event(event)
-        self.mab_problem.display_results(playing_window=window)
+        self.update_mab_history(window)
+
+    def update_mab_history(self, window):
+        for arm_id in self.mab_problem.arms_ids:
+            arm_string_results = [str(r) for r in self.mab_problem.rewards[arm_id]]
+            window[f"arm_text{arm_id}"].update("\n".join(arm_string_results))
 
     def prepare_for_play(self):
         self.instantiate_problem()
