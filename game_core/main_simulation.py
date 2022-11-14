@@ -1,5 +1,7 @@
-from game_core.simulation import BarcelonaMABSimulatingGUI
+from game_core.gui.simulating_gui import BarcelonaMABAlgorithmSimulatingGUI
+from game_core.simulation.algorithm import RandomAlgorithm, UpperConfidenceBound1
 
 if __name__ == "__main__":
-    gui = BarcelonaMABSimulatingGUI(simulate=True)
+    algorithm_class = UpperConfidenceBound1
+    gui = BarcelonaMABAlgorithmSimulatingGUI(simulate=True, algorithm_class=algorithm_class, algorithm_kwargs={})
     gui.play_window_process()

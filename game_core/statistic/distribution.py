@@ -16,3 +16,10 @@ class GaussianDistribution(DistributionABC):
 
     def sample(self) -> float:
         return normal(loc=self._mean, scale=self._std_dev)
+
+
+class PositiveGaussianDistribution(GaussianDistribution):
+    def sample(self) -> float:
+        sample = super().sample()
+
+        return sample if sample >= 0 else 0

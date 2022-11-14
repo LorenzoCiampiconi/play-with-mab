@@ -1,0 +1,89 @@
+import abc
+import random
+from collections import defaultdict
+from random import sample
+from typing import Union, Mapping, Dict
+
+import numpy as np
+
+from game_core.statistic.mab import MABProblem
+
+
+class MABAlgorithm(metaclass=abc.ABCMeta):
+    algorithm_label = "NotImplemented"
+    mab_problem: MABProblem
+
+    def __init__(self, *, mab_problem: MABProblem):
+        self._mab_problem: MABProblem = mab_problem
+
+    @property
+    def mab_problem(self):
+        assert self._mab_problem is not None
+        return self._mab_problem
+
+    @abc.abstractmethod
+    def select_arm(self) -> str:
+        pass
+
+    @abc.abstractmethod
+    def info(self) -> str:
+        pass
+
+
+class RandomAlgorithm(MABAlgorithm):
+    algorithm_label = "RANDOM"
+
+    def select_arm(self) -> str:
+        selected_arm_id = sample(self.mab_problem.arms_ids, 1)[0]
+        return f"arm{selected_arm_id}"
+
+    def info(self) -> str:
+        "(no info available)"
+
+
+class UpperConfidenceBound1(MABAlgorithm):
+    algorithm_label = "UCB-1"
+
+    def __init__(self, reset=False, **kwargs):
+        super().__init__(**kwargs)
+        self._last_played_arm: Union[None, str] = None
+        self._upper_confidence_bounds: Dict[str, Union[float]] = defaultdict(float)
+
+        if reset:
+            self.mab_problem.reset()
+
+    def _update_upper_confidence_bound(self, arm):
+        arm_record = self.mab_problem.record[arm]
+        n = arm_record['actions']
+
+        if n != 0:
+            sample_mean = arm_record['reward'] / n if n != 0 else 0
+
+            variance_bound = arm_record['reward'] / arm_record['actions']
+            variance_bound += np.sqrt(2 * np.log(self.mab_problem.total_actions) / n)
+
+            c = np.sqrt(np.min([variance_bound, 1 / 4]) * np.log(self.mab_problem.total_actions) / n)
+
+            ucb = sample_mean + c
+            self._upper_confidence_bounds[arm] = ucb
+
+        else:
+            self._upper_confidence_bounds[arm] = np.inf
+
+    def _update_upper_confidence_bounds(self):
+        if self._last_played_arm is not None:
+            for arm_id in self.mab_problem.arms_ids:
+                self._update_upper_confidence_bound(arm_id)
+
+    def select_arm(self) -> str:
+        self._update_upper_confidence_bounds()
+
+        bounds_map_to_arms = {v: k for k, v in self._upper_confidence_bounds.items()}
+        selected_arm = bounds_map_to_arms[max(bounds_map_to_arms.keys())] if self._last_played_arm is not None else sample(self.mab_problem.arms_ids, 1)[0]
+
+        self._last_played_arm = selected_arm
+
+        return selected_arm
+
+    def info(self) -> str:
+        return f"INFO - (bounds for arms are {self._upper_confidence_bounds})"

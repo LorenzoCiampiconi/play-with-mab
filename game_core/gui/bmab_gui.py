@@ -6,7 +6,7 @@ import PySimpleGUI as sg
 
 from game_core.gui import img_path
 from game_core.gui.base_gui import BaseGUIABC
-from game_core.stat.mab import MabProblem
+from game_core.statistic.mab import MABProblem
 
 
 class BarcelonaMabGUI(BaseGUIABC):
@@ -17,8 +17,10 @@ class BarcelonaMabGUI(BaseGUIABC):
     slot_img_size = (300, 200)
     results_font_size = ("helvetica", 25)
 
-    def __init__(self):
-        self.mab_problem: Union[None, MabProblem] = None
+    def __init__(self, *, configuration=None, **kwargs):
+        super().__init__(**kwargs)
+        self.mab_problem: Union[None, MABProblem] = None
+        self.instantiate_problem(configuration=configuration)
 
     @staticmethod
     def get_byte_64_image(img: str, size: Tuple[int, int] = (200, 200)):
@@ -34,13 +36,13 @@ class BarcelonaMabGUI(BaseGUIABC):
             arms = dict()
             for id in configuration:
                 arms[id] = configuration[id]["dist_class"](configuration[id]["dist_params"])
-            self.mab_problem = MabProblem(arms)
+            self.mab_problem = MABProblem(arms)
         else:
-            self.mab_problem = MabProblem()
+            self.mab_problem = MABProblem()
 
-    def pull_by_event(self, event_str: str, playing_window):
+    def pull_by_event(self, event_str: str):
         if "arm" in event_str:
-            arm_code = int(event_str[-1])
+            arm_code = event_str.split("_")[-1]
             return self.mab_problem.pull(arm_code)
 
     def _get_layout_col_by_arm_id(self, arm_id) -> sg.Column:
@@ -49,7 +51,7 @@ class BarcelonaMabGUI(BaseGUIABC):
         arm_col = [
             [
                 sg.Button(
-                    f"arm{arm_id}",
+                    f"arm_{arm_id}",
                     size=self.arm_button_size,
                     image_data=slot_img,
                     button_color="#35654d",
@@ -74,7 +76,7 @@ class BarcelonaMabGUI(BaseGUIABC):
         return layout
 
     def event_loop_stem(self, event, window):
-        self.pull_by_event(event, playing_window=window)
+        self.pull_by_event(event)
         self.mab_problem.display_results(playing_window=window)
 
     def prepare_for_play(self):
