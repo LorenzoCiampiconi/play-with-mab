@@ -5,18 +5,17 @@ import io
 from PIL import Image
 import PySimpleGUI as sg
 
-from mab import MabProblem
+from game_core.gui import img_path
+from game_core.gui.base_gui import BaseGUIABC
+from game_core.mab import MabProblem
 
-img_path = Path(__file__).parent / "img"
 
-
-class BarcelonaMabGUI:
+class BarcelonaMabGUI(BaseGUIABC):
     slot_img_file = img_path / "slot.png"
     background = img_path / "background.png"
     button_img_file = img_path / "button3.png"
     arm_button_size = (3.5, 3.5)
     slot_img_size = (300,200)
-    play_window_size = (1250, 800)
     results_font_size = ("helvetica", 25)
 
     def __init__(self):
@@ -64,24 +63,13 @@ class BarcelonaMabGUI:
 
         return layout
 
-    def play_window_process(self):
+    def prepare_for_play(self):
         self.instantiate_problem()
-        layout = self.get_play_layout()
 
-        window = sg.Window(
-            "Get rich with our MAB",
-            layout,
-            element_justification='c',
-            size=self.play_window_size,
-            finalize=True
-        )
+    def window_layout_post_process(self, window):
         for arm_id in self.mab_problem.arms_ids:
             window[f'col_{arm_id}'].Widget.configure(borderwidth=2, relief=sg.RELIEF_SOLID)
 
-        while True:
-            event, values = window.read()
-            if event == sg.WIN_CLOSED or event == "Cancel":  # if user closes window or clicks cancel
-                break
-
-            self.pull_by_event(event, playing_window=window)
-            self.mab_problem.display_results(playing_window=window)
+    def event_loop_stem(self, event, window):
+        self.pull_by_event(event, playing_window=window)
+        self.mab_problem.display_results(playing_window=window)

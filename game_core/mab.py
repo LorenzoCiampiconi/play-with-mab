@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional, Tuple, List
 
 from distribution import DistributionABC, GaussianDistribution
 
@@ -9,7 +9,8 @@ class MabProblem:
         if arms is None:
             arms = self._get_default_arms()
         self._arms: Dict[int, DistributionABC] = arms
-        self._results = defaultdict(list)
+        self._results: Dict[int, List[float]] = defaultdict(list)
+        self._cumulative_reward: int = 0
 
     @staticmethod
     def _get_default_arms():
@@ -27,6 +28,8 @@ class MabProblem:
 
         if save_results:
             self._results[arm_id].append(result)
+
+        self._cumulative_reward += result
 
         return result
 
