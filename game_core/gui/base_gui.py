@@ -46,22 +46,22 @@ class BaseGUIABC(metaclass=abc.ABCMeta):
     def event_loop_stem(self, event, window):
         pass
 
+    @property
+    def timeout(self):
+        return None
+
     def play_window_process(self):
         self.prepare_for_play()
         layout = self.get_play_layout()
 
         window = sg.Window(
-            "Get rich with our MAB",
-            layout,
-            element_justification='c',
-            size=self.play_window_size,
-            finalize=True
+            "Get rich with our MAB", layout, element_justification="c", size=self.play_window_size, finalize=True
         )
 
         self.window_layout_post_process(window)
 
         while True:
-            event, values = window.read()
+            event, values = window.read(timeout=self.timeout)
             if event == sg.WIN_CLOSED or event == "Cancel":  # if user closes window or clicks cancel
                 break
 
