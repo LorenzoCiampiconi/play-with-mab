@@ -21,6 +21,7 @@ class BarcelonaMabGUI(BaseGUIABC):
         super().__init__(**kwargs)
         self.mab_problem: Union[None, MABProblem] = None
         self.instantiate_problem(configuration=configuration)
+        self.side_window = None
 
     @staticmethod
     def get_byte_64_image(img: str, size: Tuple[int, int] = (200, 200)):
@@ -49,16 +50,8 @@ class BarcelonaMabGUI(BaseGUIABC):
         slot_img = self.get_byte_64_image(self.slot_img_file, size=self.slot_img_size)
 
         arm_col = [
-            [
-                sg.Button(
-                    f"arm_{arm_id}",
-                    size=self.arm_button_size,
-                    image_data=slot_img,
-                    button_color="#35654d",
-                    mouseover_colors=("#35654d", "#35654d"),
-                )
-            ],
-            [sg.Text("", key=f"arm_text{arm_id}", font=self.results_font_size, background_color="#35654d")],
+            [sg.Button(f'arm_{arm_id}', size=self.arm_button_size, image_data=slot_img, button_color="#35674d")],
+            [sg.Text('', key=f"arm_text{arm_id}", font=self.results_font_size, background_color="#35654d")]
         ]
         return sg.Column(
             arm_col,
@@ -71,7 +64,13 @@ class BarcelonaMabGUI(BaseGUIABC):
         )
 
     def get_play_layout(self):
-        layout = [[self._get_layout_col_by_arm_id(arm_id) for arm_id in self.mab_problem.arms_ids]]
+        layout = [
+            [
+                self._get_layout_col_by_arm_id(arm_id)
+                for arm_id in self.mab_problem.arms_ids
+            ],
+            [sg.Button("Simulate", size=(20,1.3))]
+        ]
 
         return layout
 
@@ -89,4 +88,17 @@ class BarcelonaMabGUI(BaseGUIABC):
 
     def window_layout_post_process(self, window):
         for arm_id in self.mab_problem.arms_ids:
-            window[f"col_{arm_id}"].Widget.configure(borderwidth=2, relief=sg.RELIEF_SOLID)
+            window[f'col_{arm_id}'].Widget.configure(borderwidth=2, relief=sg.RELIEF_SOLID)
+
+    def open_new_window(self):
+        layout = [[sg.Text(key="test")]]
+        self.side_window = sg.Window('Second Window', layout, size=(1250, 800), finalize=True)
+
+    def event_loop_stem(self, event, window):
+        self.pull_by_event(event)
+        self.update_mab_history(window)
+        if self.side_window is not None:
+            self.side_window['test'].update(self.mab_problem.rewards[self.mab_problem.arms_ids[0]])
+
+        if event == "Simulate":
+            self.open_new_window()

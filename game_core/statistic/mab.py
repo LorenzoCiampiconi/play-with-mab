@@ -60,3 +60,6 @@ class MABProblem:
     @property
     def rewards(self):
         return self._rewards
+
+    def get_reward_by_id(self, arm_id: str) -> List[float]:
+        return self.rewards[arm_id]
