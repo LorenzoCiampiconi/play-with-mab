@@ -7,13 +7,15 @@ import PySimpleGUI as sg
 
 from mab import MabProblem
 
-path = Path(__file__).parent
+img_path = Path(__file__).parent / "img"
 
 
 class BarcelonaMabGUI:
-    slot_img_file = path / "slot.png"
-    button_img_file = path / "button2.png"
-    arm_button_size = (5, 1.3)
+    slot_img_file = img_path / "slot.png"
+    background = img_path / "background.png"
+    button_img_file = img_path / "button3.png"
+    arm_button_size = (3.5, 3.5)
+    slot_img_size = (300,200)
     play_window_size = (1250, 800)
     results_font_size = ("helvetica", 25)
 
@@ -21,9 +23,9 @@ class BarcelonaMabGUI:
         self.mab_problem: Union[None, MabProblem] = None
 
     @staticmethod
-    def get_byte_64_image(img: str, dim: Tuple[int,int]=(200, 200)):
+    def get_byte_64_image(img: str, size: Tuple[int, int]=(200, 200)):
         image = Image.open(img)
-        image.thumbnail(dim)
+        image.thumbnail(size)
         bio = io.BytesIO()
         image.save(bio, format="PNG")
 
@@ -44,12 +46,10 @@ class BarcelonaMabGUI:
             return self.mab_problem.pull(arm_code)
 
     def _get_layout_col_by_arm_id(self, arm_id) -> sg.Column:
-        slot_img = sg.Image(self.get_byte_64_image(self.slot_img_file))
-        button_img = self.get_byte_64_image(self.button_img_file, dim=(70, 100))
+        slot_img = self.get_byte_64_image(self.slot_img_file, size=self.slot_img_size)
 
         arm_col = [
-            [slot_img],
-            [sg.Button(f'arm{arm_id}', size=self.arm_button_size, image_data=button_img)],
+            [sg.Button(f'arm{arm_id}', size=self.arm_button_size, image_data=slot_img)],
             [sg.Text('', key=f"arm_text{arm_id}", font=self.results_font_size)]
         ]
         return sg.Column(arm_col, vertical_alignment='t', element_justification='c')
