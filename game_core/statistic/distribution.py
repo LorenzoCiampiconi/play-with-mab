@@ -1,7 +1,10 @@
 import abc
 
+import numpy as np
 from numpy.random import normal, binomial
 from numpy.random import beta
+from scipy import stats
+
 
 class DistributionABC(metaclass=abc.ABCMeta):
     @abc.abstractmethod
@@ -32,6 +35,9 @@ class BetaDistribution(DistributionABC):
 
     def sample(self) -> float:
         return beta(a=self.a, b=self.b)
+
+    def pdf(self, x):
+        return stats.beta.pdf(x, self.a, self.b)
 
 
 class BernoulliDistribution(DistributionABC):

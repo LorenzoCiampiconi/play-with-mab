@@ -2,6 +2,7 @@ import abc
 import random
 from collections import defaultdict
 from random import sample
+from scipy.stats import beta
 from typing import Union, Mapping, Dict, Tuple
 
 import matplotlib.pyplot as plt
@@ -114,15 +115,37 @@ class ThompsonSampling(MABAlgorithm):
             failures = self.mab_problem.record[arm]['actions'] - self.mab_problem.record[arm]['reward'] if self.mab_problem.record[arm]['actions'] - self.mab_problem.record[arm]['reward'] > 0 else 1
             self.beta_distributions_parameters[arm] = (successes, failures)
 
+    @property
+    def beta_dist_of_arms(self) -> Dict[str, BetaDistribution]:
+        return {arm: BetaDistribution(self.beta_distributions_parameters[arm][0], self.beta_distributions_parameters[arm][1]) for arm in self.mab_problem.arms_ids}
+
     def select_arm(self) -> str:
         self._update_beta_distributions()
-        samples = {arm: BetaDistribution(self.beta_distributions_parameters[arm][0], self.beta_distributions_parameters[arm][1]).sample() for arm in self.mab_problem.arms_ids}
+        samples = {arm: beta_dist.sample() for arm, beta_dist in self.beta_dist_of_arms.items()}
         selected_arm = max(samples.items(), key=operator.itemgetter(1))[0]
         self._last_played_arm = selected_arm
         return selected_arm
 
     def plot_stats(self) -> plt.Figure:
-        return plt.figure()
+        beta_dists_of_arms:dict  = self.beta_dist_of_arms
+
+        fig = plt.figure(figsize=(7, 7))
+        low_lim = min(beta.ppf(0.01, beta_dist.a, beta_dist.b) for beta_dist in beta_dists_of_arms.values())
+        up_lim = max(beta.ppf(0.99, beta_dist.a, beta_dist.b) for beta_dist in beta_dists_of_arms.values())
+
+        x = np.linspace(low_lim, up_lim, 1000)
+
+        for arm, beta_dist in beta_dists_of_arms.items():
+            pdf = beta_dist.pdf(x)
+            plt.plot(x, pdf, label=f"arm_{arm}")
+
+        plt.title('Beta Distributions of arms', fontsize='12')
+        plt.xlabel('Values of Random Variables X (0, 1)', fontsize='12')
+        plt.ylabel('Probabilities', fontsize='12')
+        plt.legend(frameon=False)
+        plt.tight_layout()
+
+        return fig
 
     def info(self) -> str:
         return f"INFO - (parameters for distributions are {self.beta_distributions_parameters.items()})"

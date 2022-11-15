@@ -18,7 +18,6 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
     mab_problem: MABProblem
 
     _cumulative_reward_fig_label = "cumulative_reward_fig"
-    _algorithm_stats_fig_label = "_algorithm_stats_fig"
 
     def __init__(self, *, simulate: Optional[bool] = False, simulation_interval=1, **kwargs):
         super().__init__(**kwargs)
@@ -50,10 +49,12 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
     def timeout(self):
         return self._simulation_interval / 2
 
-    def open_simulation_window(self):
-        layout = [[sg.Text(key="test")], [sg.Canvas(key=self._cumulative_reward_fig_label)]]
+    def _get_simulation_window_layout(self):
+        return [[sg.Canvas(key=self._cumulative_reward_fig_label)]]
 
-        self._simulation_window = sg.Window("Second Window", layout, size=(1250, 800), finalize=True, background_color="white")
+    def open_simulation_window(self):
+        layout = self._get_simulation_window_layout()
+        self._simulation_window = sg.Window("Simulation Window", layout, size=(1600, 800), finalize=True, background_color="white")
 
     def draw_figure_on_window_canvas(self, window: sg.Window, canvas_id: str, figure: plt.Figure):
         canvas = window[canvas_id].TKCanvas
@@ -105,6 +106,7 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
 
 class AlgorithmEmployingSimulatingGUIMixin(SimulatingGUIMixinABC):
     mab_problem: MABProblem
+    _algorithm_stats_fig_label = "_algorithm_stats_fig"
 
     def __init__(self, algorithm_class: Type[MABAlgorithm], algorithm_kwargs, **kwargs):
         super().__init__(**kwargs)
@@ -122,19 +124,27 @@ class AlgorithmEmployingSimulatingGUIMixin(SimulatingGUIMixinABC):
         self._last_simulation_step = time.time()
         self._total_simulation_steps += 1
 
+    def _get_simulation_window_layout(self):
+        return [
+            [
+                [sg.Canvas(key=self._cumulative_reward_fig_label, size=(100, 100))],
+                [sg.Canvas(key=self._algorithm_stats_fig_label, size=(100, 100))]
+            ]
+        ]
+
     def update_algorithm_stats(self):
         if self._algorithm_stats_fig_label in self._figures:
             self._figures[self._algorithm_stats_fig_label].get_tk_widget().forget()
 
         figure = self._algorithm.plot_stats()
 
-        self._figures[self._cumulative_reward_fig_label] = self.draw_figure_on_window_canvas(
-            self._simulation_window, self._cumulative_reward_fig_label, figure
+        self._figures[self._algorithm_stats_fig_label] = self.draw_figure_on_window_canvas(
+            self._simulation_window, self._algorithm_stats_fig_label, figure
         )
 
     def update_simulation_window(self):
         super().update_simulation_window()
-        # self.update_algorithm_stats()
+        self.update_algorithm_stats()
 
 
 class BarcelonaMABAlgorithmSimulatingGUI(AlgorithmEmployingSimulatingGUIMixin, BarcelonaMabGUI):
