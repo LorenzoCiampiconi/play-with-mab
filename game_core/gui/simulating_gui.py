@@ -52,7 +52,7 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
     def open_simulation_window(self):
         layout = [[sg.Text(key="test")], [sg.Canvas(key=self._cumulative_reward_fig_label)]]
 
-        self._simulation_window = sg.Window("Second Window", layout, size=(1250, 800), finalize=True)
+        self._simulation_window = sg.Window("Second Window", layout, size=(1250, 800), finalize=True, background_color="white")
 
     def draw_figure_on_window_canvas(self, window: sg.Window, canvas_id: str, figure: plt.Figure):
         canvas = window[canvas_id].TKCanvas
