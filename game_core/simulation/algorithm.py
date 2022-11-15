@@ -151,7 +151,7 @@ class ThompsonSampling(MABAlgorithm):
 
         for arm, beta_dist in beta_dists_of_arms.items():
             pdf = beta_dist.pdf(x)
-            plt.plot(x, pdf, label=f"arm_{arm}")
+            plt.plot(x, pdf, label=f"Arm {arm}")
 
         plt.title("Beta Distributions of arms", fontsize="12")
         plt.xlabel("Values of Random Variables X (0, 1)", fontsize="12")

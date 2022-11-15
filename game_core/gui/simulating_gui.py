@@ -84,12 +84,12 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
         plt.ylim(0, self.max_simulation_steps)
         plt.xlim(0, self.max_simulation_steps)
         for arm in self.mab_problem.arms_ids:
-            plt.plot(cumulative_reward_by_id[arm], label=f"Arm {arm} cumulative reward", linewidth=2.5)
-        plt.plot(cumulative_reward, label="Total cumulative reward", linewidth=3)
+            plt.plot(cumulative_reward_by_id[arm], label=f"Arm {arm}", linewidth=2.5)
+        plt.plot(cumulative_reward, label="Total", linewidth=3)
 
         plt.title("Cumulative Rewards", fontsize="12")
         plt.xlabel("time-steps", fontsize="12")
-        plt.ylabel("Reward ($)", fontsize="12")
+        plt.ylabel("Cumulative reward ($)", fontsize="12")
         plt.legend(frameon=False)
         plt.tight_layout()
 

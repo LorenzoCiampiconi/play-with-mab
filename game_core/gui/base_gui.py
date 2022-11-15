@@ -55,7 +55,7 @@ class BaseGUIABC(metaclass=abc.ABCMeta):
         layout = self.get_play_layout()
 
         window = sg.Window(
-            "Get rich with our MAB", layout, element_justification="c", size=self.play_window_size, finalize=True
+            "Get rich with our MAB - Made with <3 by Lore & Luke", layout, element_justification="c", size=self.play_window_size, finalize=True
         )
 
         self.window_layout_post_process(window)

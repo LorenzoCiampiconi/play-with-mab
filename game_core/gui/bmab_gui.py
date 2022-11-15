@@ -49,6 +49,7 @@ class BarcelonaMabGUI(BaseGUIABC):
         slot_img = self.get_byte_64_image(self.slot_img_file, size=self.slot_img_size)
 
         arm_col = [
+            [sg.Text(f"Arm {arm_id}", font=self.results_font_size, background_color="#35654d", text_color="BLACK")],
             [sg.Button(f"arm_{arm_id}", size=self.arm_button_size, image_data=slot_img, button_color="#35674d")],
             [sg.Text("", key=f"arm_text{arm_id}", font=self.results_font_size, background_color="#35654d")],
         ]
