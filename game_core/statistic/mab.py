@@ -1,7 +1,8 @@
 from collections import defaultdict
 from typing import Dict, Optional, Tuple, List
 
-from game_core.statistic.distribution import DistributionABC, GaussianDistribution, PositiveGaussianDistribution
+from game_core.statistic.distribution import DistributionABC, GaussianDistribution, PositiveGaussianDistribution, \
+    BernoulliDistribution
 
 
 class MABProblem:
@@ -24,12 +25,11 @@ class MABProblem:
 
     @staticmethod
     def _get_default_arms():
-        g_1 = PositiveGaussianDistribution(5, 1)
-        g_2 = PositiveGaussianDistribution(10, 2)
-        g_3 = PositiveGaussianDistribution(15, 5)
-        g_4 = PositiveGaussianDistribution(20, 10)
+        b_1 = BernoulliDistribution(0.2)
+        b_2 = BernoulliDistribution(0.4)
+        b_3 = BernoulliDistribution(0.8)
 
-        arms = {"1": g_1, "2": g_2, "3": g_3, "4": g_4}
+        arms = {"1": b_1, "2": b_2, "3": b_3,}
 
         return arms
 
