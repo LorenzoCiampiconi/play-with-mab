@@ -103,7 +103,6 @@ class ThompsonSampling(MABAlgorithm):
         if reset:
             self.mab_problem.reset()
 
-    #todo: we can actually update only one arm at time
     def _update_beta_distributions(self):
         for arm in self.mab_problem.arms_ids:
             successes = self.mab_problem.record[arm]['reward'] if self.mab_problem.record[arm]['reward'] > 0 else 1
