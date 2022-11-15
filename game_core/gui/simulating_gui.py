@@ -55,7 +55,12 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
     def open_simulation_window(self):
         layout = self._get_simulation_window_layout()
         self._simulation_window = sg.Window(
-            "Simulation Window", layout, size=(1600, 800), finalize=True, background_color="white"
+            "Simulation Window",
+            layout,
+            size=(800, 900),
+            finalize=True,
+            background_color="white",
+            element_justification="c",
         )
 
     def draw_figure_on_window_canvas(
@@ -67,21 +72,26 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
         canvas = window[canvas_id].TKCanvas
         figure_canvas_agg = FigureCanvasTkAgg(figure, canvas)
 
-        figure_canvas_agg.draw()
+        figure_canvas_agg.draw_idle()
         figure_canvas_agg.get_tk_widget().pack(side="top", fill="both", expand=1)
         return figure_canvas_agg
 
     def update_cumulative_rewards(self):
         cumulative_reward = self.mab_problem.history_of_cumulative_reward
         cumulative_reward_by_id = self.mab_problem.history_of_cumulative_reward_by_id()
-        figure = plt.figure()
+        figure = plt.figure(figsize=(7, 4))
         plt.clf()
-        plt.ylim(0, 30)
-        plt.xlim(0, 50)
+        plt.ylim(0, self.max_simulation_steps)
+        plt.xlim(0, self.max_simulation_steps)
         for arm in self.mab_problem.arms_ids:
             plt.plot(cumulative_reward_by_id[arm], label=f"Arm {arm} cumulative reward", linewidth=2.5)
         plt.plot(cumulative_reward, label="Total cumulative reward", linewidth=3)
+
+        plt.title("Cumulative Rewards", fontsize="12")
+        plt.xlabel("time-steps", fontsize="12")
+        plt.ylabel("Reward ($)", fontsize="12")
         plt.legend(frameon=False)
+        plt.tight_layout()
 
         self._figures[self._cumulative_reward_fig_label] = self.draw_figure_on_window_canvas(
             self._simulation_window, self._cumulative_reward_fig_label, figure, self._cumulative_reward_fig_label
@@ -136,11 +146,10 @@ class AlgorithmEmployingSimulatingGUIMixin(SimulatingGUIMixinABC):
         self._total_simulation_steps += 1
 
     def _get_simulation_window_layout(self):
+        col = [[sg.Canvas(key=self._cumulative_reward_fig_label)], [sg.Canvas(key=self._algorithm_stats_fig_label)]],
+
         return [
-            [
-                [sg.Canvas(key=self._cumulative_reward_fig_label, size=(100, 100))],
-                [sg.Canvas(key=self._algorithm_stats_fig_label, size=(100, 100))],
-            ]
+            col
         ]
 
     def update_algorithm_stats(self):

@@ -138,13 +138,14 @@ class ThompsonSampling(MABAlgorithm):
     def plot_stats(self) -> plt.Figure:
         beta_dists_of_arms: dict = self.beta_dist_of_arms
 
-        fig = plt.figure(figsize=(3, 5))
+        fig = plt.figure(figsize=(7, 4))
         plt.clf()
-        plt.ylim(0, 15)
-        plt.xlim(0, 1)
 
         low_lim = min(beta.ppf(0.01, beta_dist.a, beta_dist.b) for beta_dist in beta_dists_of_arms.values())
-        up_lim = max(beta.ppf(0.99, beta_dist.a, beta_dist.b) for beta_dist in beta_dists_of_arms.values())
+        up_lim = 1
+
+        plt.ylim(0, 10)
+        plt.xlim(0, up_lim)
 
         x = np.linspace(low_lim, up_lim, 1000)
 
