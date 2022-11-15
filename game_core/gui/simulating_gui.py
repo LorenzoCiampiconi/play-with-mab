@@ -75,7 +75,6 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
             self._simulation_window, self._cumulative_reward_fig_label, figure
         )
 
-
     def update_simulation_window(self):
         self.update_cumulative_rewards()
 
@@ -135,7 +134,7 @@ class AlgorithmEmployingSimulatingGUIMixin(SimulatingGUIMixinABC):
 
     def update_simulation_window(self):
         super().update_simulation_window()
-        self.update_algorithm_stats()
+        # self.update_algorithm_stats()
 
 
 class BarcelonaMABAlgorithmSimulatingGUI(AlgorithmEmployingSimulatingGUIMixin, BarcelonaMabGUI):

@@ -94,8 +94,13 @@ class UpperConfidenceBound1(MABAlgorithm):
     def info(self) -> str:
         return f"INFO - (bounds for arms are {self._upper_confidence_bounds})"
 
+    def plot_stats(self) -> plt.Figure:
+        return plt.figure()
+
 
 class ThompsonSampling(MABAlgorithm):
+    algorithm_label = "Thompson Sampling"
+
     def __init__(self, reset=False, **kwargs):
         super().__init__(**kwargs)
         self.beta_distributions_parameters: Dict[str, Tuple[int, int]] = defaultdict(lambda: (1, 1))
@@ -115,6 +120,9 @@ class ThompsonSampling(MABAlgorithm):
         selected_arm = max(samples.items(), key=operator.itemgetter(1))[0]
         self._last_played_arm = selected_arm
         return selected_arm
+
+    def plot_stats(self) -> plt.Figure:
+        return plt.figure()
 
     def info(self) -> str:
         return f"INFO - (parameters for distributions are {self.beta_distributions_parameters.items()})"
