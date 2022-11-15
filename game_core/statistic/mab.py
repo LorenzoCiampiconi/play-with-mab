@@ -1,8 +1,12 @@
 from collections import defaultdict
 from typing import Dict, Optional, Tuple, List
 
-from game_core.statistic.distribution import DistributionABC, GaussianDistribution, PositiveGaussianDistribution, \
-    BernoulliDistribution
+from game_core.statistic.distribution import (
+    DistributionABC,
+    GaussianDistribution,
+    PositiveGaussianDistribution,
+    BernoulliDistribution,
+)
 
 
 class MABProblem:
@@ -10,18 +14,19 @@ class MABProblem:
         if arms is None:
             arms = self._get_default_arms()
         self._arms: Dict[str, DistributionABC] = arms
-        self._rewards: Dict[str, List[float]] = defaultdict(list)
-        self._all_rewards = []
-        self.record = defaultdict(lambda: dict(actions=0, reward=0, reward_squared=0))
-        self._cumulative_reward: float = 0
-        self.total_actions = 0
+        self.__reset__()
 
-    def reset(self):
+    def __reset__(self):
         self._rewards: Dict[int, List[float]] = defaultdict(list)
         self._all_rewards = []
         self.record = defaultdict(lambda: dict(actions=0, reward=0, reward_squared=0))
         self._cumulative_reward: float = 0
         self.total_actions = 0
+        self._history_of_play = []
+        self._history_of_cumulative_reward = []
+
+    def reset(self):
+        self.__reset__()
 
     @staticmethod
     def _get_default_arms():
@@ -29,9 +34,16 @@ class MABProblem:
         b_2 = BernoulliDistribution(0.4)
         b_3 = BernoulliDistribution(0.8)
 
-        arms = {"1": b_1, "2": b_2, "3": b_3,}
+        arms = {
+            "1": b_1,
+            "2": b_2,
+            "3": b_3,
+        }
 
         return arms
+
+    def history_of_cumulative_reward(self):
+        return self._history_of_cumulative_reward
 
     def pull(self, arm_id, save_results=True):
         reward = round(self._arms[arm_id].sample(), 2)
@@ -42,9 +54,10 @@ class MABProblem:
             self.total_actions += 1
             self._cumulative_reward += reward
             self._all_rewards.append(reward)
-            self.record[arm_id]['actions'] += 1
-            self.record[arm_id]['reward'] += reward
-            self.record[arm_id]['reward_squared'] += reward ** 2
+            self.record[arm_id]["actions"] += 1
+            self.record[arm_id]["reward"] += reward
+            self.record[arm_id]["reward_squared"] += reward**2
+            self._history_of_play.append(arm_id)
 
         return reward
 
@@ -63,3 +76,7 @@ class MABProblem:
 
     def get_reward_by_id(self, arm_id: str) -> List[float]:
         return self.rewards[arm_id]
+
+    @property
+    def cumulative_reward(self):
+        return self._cumulative_reward

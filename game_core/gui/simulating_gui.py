@@ -12,12 +12,16 @@ from game_core.statistic.mab import MABProblem
 
 import PySimpleGUI as sg
 
+
 class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
     max_simulation_steps = 100
     mab_problem: MABProblem
 
+    _cumulative_reward_fig_label = "cumulative_reward_fig"
+
     def __init__(self, *, simulate: Optional[bool] = False, simulation_interval=1, **kwargs):
         super().__init__(**kwargs)
+        self._figures = {}
         self._simulate = simulate
         self._simulation_interval = simulation_interval
         self._last_simulation_step = 0
@@ -46,25 +50,33 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
         return self._simulation_interval / 2
 
     def open_simulation_window(self):
-        layout = [
-            [sg.Text(key="test")],
-            [sg.Canvas(key='prova_plot')]
-        ]
+        layout = [[sg.Text(key="test")], [sg.Canvas(key=self._cumulative_reward_fig_label)]]
 
-        self._simulation_window = sg.Window('Second Window', layout, size=(1250, 800), finalize=True)
+        self._simulation_window = sg.Window("Second Window", layout, size=(1250, 800), finalize=True)
 
-    def draw_figure_on_window_canvas(self, window:sg.Window, canvas_id:str, figure:plt.Figure):
-        canvas = window[canvas_id]
+    def draw_figure_on_window_canvas(self, window: sg.Window, canvas_id: str, figure: plt.Figure):
+        canvas = window[canvas_id].TKCanvas
         figure_canvas_agg = FigureCanvasTkAgg(figure, canvas)
         figure_canvas_agg.draw()
-        figure_canvas_agg.get_tk_widget().pack(side='top', fill='both', expand=1)
+        figure_canvas_agg.get_tk_widget().pack(side="top", fill="both", expand=1)
         return figure_canvas_agg
-    def update_side_window(self):
-        Y = np.random.sample(10)
-        figure = plt.Figure()
-        plt.plot(Y)
-        # self.draw_figure_on_window_canvas(self._simulation_window, "prova_plot", figure)
-        self._simulation_window['test'].update(self.mab_problem.rewards[self.mab_problem.arms_ids[0]])
+
+    def update_cumulative_rewards(self):
+        if self._cumulative_reward_fig_label in self._figures:
+            self._figures[self._cumulative_reward_fig_label].get_tk_widget().forget()
+
+        cumulative_reward = self.mab_problem.cumulative_reward
+
+        figure = plt.figure()
+        plt.clf()
+        plt.plot(cumulative_reward)
+        self._figures[self._cumulative_reward_fig_label] = self.draw_figure_on_window_canvas(
+            self._simulation_window, self._cumulative_reward_fig_label, figure
+        )
+
+    def update_simulation_window(self):
+        self.update_cumulative_rewards()
+        self._simulation_window["test"].update(self.mab_problem.rewards[self.mab_problem.arms_ids[0]])
 
     def read_simulation_window(self):
         event, values = self._simulation_window.read(timeout=0.01)
@@ -79,7 +91,7 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
         super().event_loop_stem(event, window)
 
         if self._simulation_window is not None:
-            self.update_side_window()
+            self.update_simulation_window()
             self.read_simulation_window()
 
         if event == "Simulate":

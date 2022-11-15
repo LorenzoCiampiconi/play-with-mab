@@ -49,8 +49,8 @@ class BarcelonaMabGUI(BaseGUIABC):
         slot_img = self.get_byte_64_image(self.slot_img_file, size=self.slot_img_size)
 
         arm_col = [
-            [sg.Button(f'arm_{arm_id}', size=self.arm_button_size, image_data=slot_img, button_color="#35674d")],
-            [sg.Text('', key=f"arm_text{arm_id}", font=self.results_font_size, background_color="#35654d")]
+            [sg.Button(f"arm_{arm_id}", size=self.arm_button_size, image_data=slot_img, button_color="#35674d")],
+            [sg.Text("", key=f"arm_text{arm_id}", font=self.results_font_size, background_color="#35654d")],
         ]
         return sg.Column(
             arm_col,
@@ -64,11 +64,8 @@ class BarcelonaMabGUI(BaseGUIABC):
 
     def get_play_layout(self):
         layout = [
-            [
-                self._get_layout_col_by_arm_id(arm_id)
-                for arm_id in self.mab_problem.arms_ids
-            ],
-            [sg.Button("Simulate", size=(20,1.3))]
+            [self._get_layout_col_by_arm_id(arm_id) for arm_id in self.mab_problem.arms_ids],
+            [sg.Button("Simulate", size=(20, 1.3))],
         ]
 
         return layout
@@ -87,7 +84,7 @@ class BarcelonaMabGUI(BaseGUIABC):
 
     def window_layout_post_process(self, window):
         for arm_id in self.mab_problem.arms_ids:
-            window[f'col_{arm_id}'].Widget.configure(borderwidth=2, relief=sg.RELIEF_SOLID)
+            window[f"col_{arm_id}"].Widget.configure(borderwidth=2, relief=sg.RELIEF_SOLID)
 
     def event_loop_stem(self, event, window):
         self.pull_by_event(event)

@@ -54,11 +54,11 @@ class UpperConfidenceBound1(MABAlgorithm):
 
     def _update_upper_confidence_bound(self, arm):
         arm_record = self.mab_problem.record[arm]
-        n = arm_record['actions']
+        n = arm_record["actions"]
 
         if n != 0:
-            sample_mean = arm_record['reward'] / arm_record['actions'] if n != 0 else np.inf
-            c = np.sqrt(2 * np.log(self.mab_problem.total_actions) / arm_record['actions'])
+            sample_mean = arm_record["reward"] / arm_record["actions"] if n != 0 else np.inf
+            c = np.sqrt(2 * np.log(self.mab_problem.total_actions) / arm_record["actions"])
 
             ucb = sample_mean + c
             self._upper_confidence_bounds[arm] = ucb
@@ -75,7 +75,11 @@ class UpperConfidenceBound1(MABAlgorithm):
         self._update_upper_confidence_bounds()
 
         bounds_map_to_arms = {v: k for k, v in self._upper_confidence_bounds.items()}
-        selected_arm = bounds_map_to_arms[max(bounds_map_to_arms.keys())] if self._last_played_arm is not None else sample(self.mab_problem.arms_ids, 1)[0]
+        selected_arm = (
+            bounds_map_to_arms[max(bounds_map_to_arms.keys())]
+            if self._last_played_arm is not None
+            else sample(self.mab_problem.arms_ids, 1)[0]
+        )
 
         self._last_played_arm = selected_arm
 
