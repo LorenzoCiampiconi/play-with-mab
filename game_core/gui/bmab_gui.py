@@ -21,7 +21,6 @@ class BarcelonaMabGUI(BaseGUIABC):
         super().__init__(**kwargs)
         self.mab_problem: Union[None, MABProblem] = None
         self.instantiate_problem(configuration=configuration)
-        self.side_window = None
 
     @staticmethod
     def get_byte_64_image(img: str, size: Tuple[int, int] = (200, 200)):
@@ -76,9 +75,9 @@ class BarcelonaMabGUI(BaseGUIABC):
 
     def event_loop_stem(self, event, window):
         self.pull_by_event(event)
-        self.update_mab_history(window)
+        self.update_on_screen_mab_history(window)
 
-    def update_mab_history(self, window):
+    def update_on_screen_mab_history(self, window):
         for arm_id in self.mab_problem.arms_ids:
             arm_string_results = [str(r) for r in self.mab_problem.rewards[arm_id]]
             window[f"arm_text{arm_id}"].update("\n".join(arm_string_results))
@@ -90,15 +89,6 @@ class BarcelonaMabGUI(BaseGUIABC):
         for arm_id in self.mab_problem.arms_ids:
             window[f'col_{arm_id}'].Widget.configure(borderwidth=2, relief=sg.RELIEF_SOLID)
 
-    def open_new_window(self):
-        layout = [[sg.Text(key="test")]]
-        self.side_window = sg.Window('Second Window', layout, size=(1250, 800), finalize=True)
-
     def event_loop_stem(self, event, window):
         self.pull_by_event(event)
-        self.update_mab_history(window)
-        if self.side_window is not None:
-            self.side_window['test'].update(self.mab_problem.rewards[self.mab_problem.arms_ids[0]])
-
-        if event == "Simulate":
-            self.open_new_window()
+        self.update_on_screen_mab_history(window)

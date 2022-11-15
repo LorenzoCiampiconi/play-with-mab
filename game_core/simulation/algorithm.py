@@ -57,12 +57,8 @@ class UpperConfidenceBound1(MABAlgorithm):
         n = arm_record['actions']
 
         if n != 0:
-            sample_mean = arm_record['reward'] / n if n != 0 else 0
-
-            variance_bound = arm_record['reward'] / arm_record['actions']
-            variance_bound += np.sqrt(2 * np.log(self.mab_problem.total_actions) / n)
-
-            c = np.sqrt(np.min([variance_bound, 1 / 4]) * np.log(self.mab_problem.total_actions) / n)
+            sample_mean = arm_record['reward'] / arm_record['actions'] if n != 0 else np.inf
+            c = np.sqrt(2 * np.log(self.mab_problem.total_actions) / arm_record['actions'])
 
             ucb = sample_mean + c
             self._upper_confidence_bounds[arm] = ucb
