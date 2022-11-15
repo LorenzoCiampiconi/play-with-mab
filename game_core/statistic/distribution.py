@@ -1,7 +1,7 @@
 import abc
 
 from numpy.random import normal, binomial
-
+from numpy.random import beta
 
 class DistributionABC(metaclass=abc.ABCMeta):
     @abc.abstractmethod
@@ -23,6 +23,15 @@ class PositiveGaussianDistribution(GaussianDistribution):
         sample = super().sample()
 
         return sample if sample >= 0 else 0
+
+
+class BetaDistribution(DistributionABC):
+    def __init__(self, a, b):
+        self.a = a
+        self.b = b
+
+    def sample(self) -> float:
+        return beta(a=self.a, b=self.b)
 
 
 class BernoulliDistribution(DistributionABC):
