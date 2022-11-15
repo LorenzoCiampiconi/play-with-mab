@@ -24,6 +24,7 @@ class MABProblem:
         self.total_actions = 0
         self._history_of_play = []
         self._history_of_cumulative_reward = []
+        self._history_of_cumulative_reward_by_id = defaultdict(lambda: [])
 
     def reset(self):
         self.__reset__()
@@ -45,6 +46,9 @@ class MABProblem:
     def history_of_cumulative_reward(self):
         return self._history_of_cumulative_reward
 
+    def history_of_cumulative_reward_by_id(self):
+        return self._history_of_cumulative_reward_by_id
+
     def pull(self, arm_id, save_results=True):
         reward = round(self._arms[arm_id].sample(), 2)
 
@@ -59,6 +63,9 @@ class MABProblem:
             self.record[arm_id]["reward_squared"] += reward**2
             self._history_of_play.append(arm_id)
             self._history_of_cumulative_reward.append(self._cumulative_reward)
+            for arm in self.arms_ids:
+                self._history_of_cumulative_reward_by_id[arm].append(self.record[arm]["reward"])
+            print(self._history_of_cumulative_reward_by_id.items())
 
         return reward
 
