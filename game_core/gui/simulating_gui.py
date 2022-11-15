@@ -68,10 +68,15 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
             self._figures[self._cumulative_reward_fig_label].get_tk_widget().forget()
 
         cumulative_reward = self.mab_problem.history_of_cumulative_reward
-
+        cumulative_reward_by_id = self.mab_problem.history_of_cumulative_reward_by_id()
         figure = plt.figure()
         plt.clf()
-        plt.plot(cumulative_reward)
+        plt.ylim(0, 30)
+        plt.xlim(0, 50)
+        for arm in self.mab_problem.arms_ids:
+            plt.plot(cumulative_reward_by_id[arm], label=f"Arm {arm} cumulative reward", linewidth=1.5)
+        plt.plot(cumulative_reward, label='Total cumulative reward', linewidth=1.5)
+        plt.legend(frameon=False)
         self._figures[self._cumulative_reward_fig_label] = self.draw_figure_on_window_canvas(
             self._simulation_window, self._cumulative_reward_fig_label, figure
         )
