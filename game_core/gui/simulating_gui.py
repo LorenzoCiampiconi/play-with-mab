@@ -14,7 +14,7 @@ import PySimpleGUI as sg
 
 
 class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
-    max_simulation_steps = 100
+    max_simulation_steps = 50
     mab_problem: MABProblem
 
     _cumulative_reward_fig_label = "cumulative_reward_fig"
@@ -54,19 +54,24 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
 
     def open_simulation_window(self):
         layout = self._get_simulation_window_layout()
-        self._simulation_window = sg.Window("Simulation Window", layout, size=(1600, 800), finalize=True, background_color="white")
+        self._simulation_window = sg.Window(
+            "Simulation Window", layout, size=(1600, 800), finalize=True, background_color="white"
+        )
 
-    def draw_figure_on_window_canvas(self, window: sg.Window, canvas_id: str, figure: plt.Figure):
+    def draw_figure_on_window_canvas(
+        self, window: sg.Window, canvas_id: str, figure: plt.Figure, figure_agg_label: str
+    ):
+        if figure_agg_label in self._figures:
+            self._figures[figure_agg_label].get_tk_widget().forget()
+
         canvas = window[canvas_id].TKCanvas
         figure_canvas_agg = FigureCanvasTkAgg(figure, canvas)
+
         figure_canvas_agg.draw()
         figure_canvas_agg.get_tk_widget().pack(side="top", fill="both", expand=1)
         return figure_canvas_agg
 
     def update_cumulative_rewards(self):
-        if self._cumulative_reward_fig_label in self._figures:
-            self._figures[self._cumulative_reward_fig_label].get_tk_widget().forget()
-
         cumulative_reward = self.mab_problem.history_of_cumulative_reward
         cumulative_reward_by_id = self.mab_problem.history_of_cumulative_reward_by_id()
         figure = plt.figure()
@@ -74,11 +79,12 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
         plt.ylim(0, 30)
         plt.xlim(0, 50)
         for arm in self.mab_problem.arms_ids:
-            plt.plot(cumulative_reward_by_id[arm], label=f"Arm {arm} cumulative reward", linewidth=1.5)
-        plt.plot(cumulative_reward, label='Total cumulative reward', linewidth=1.5)
+            plt.plot(cumulative_reward_by_id[arm], label=f"Arm {arm} cumulative reward", linewidth=2.5)
+        plt.plot(cumulative_reward, label="Total cumulative reward", linewidth=3)
         plt.legend(frameon=False)
+
         self._figures[self._cumulative_reward_fig_label] = self.draw_figure_on_window_canvas(
-            self._simulation_window, self._cumulative_reward_fig_label, figure
+            self._simulation_window, self._cumulative_reward_fig_label, figure, self._cumulative_reward_fig_label
         )
 
     def update_simulation_window(self):
@@ -133,18 +139,15 @@ class AlgorithmEmployingSimulatingGUIMixin(SimulatingGUIMixinABC):
         return [
             [
                 [sg.Canvas(key=self._cumulative_reward_fig_label, size=(100, 100))],
-                [sg.Canvas(key=self._algorithm_stats_fig_label, size=(100, 100))]
+                [sg.Canvas(key=self._algorithm_stats_fig_label, size=(100, 100))],
             ]
         ]
 
     def update_algorithm_stats(self):
-        if self._algorithm_stats_fig_label in self._figures:
-            self._figures[self._algorithm_stats_fig_label].get_tk_widget().forget()
-
         figure = self._algorithm.plot_stats()
 
         self._figures[self._algorithm_stats_fig_label] = self.draw_figure_on_window_canvas(
-            self._simulation_window, self._algorithm_stats_fig_label, figure
+            self._simulation_window, self._algorithm_stats_fig_label, figure, self._algorithm_stats_fig_label
         )
 
     def update_simulation_window(self):

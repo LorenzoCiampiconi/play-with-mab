@@ -111,13 +111,22 @@ class ThompsonSampling(MABAlgorithm):
 
     def _update_beta_distributions(self):
         for arm in self.mab_problem.arms_ids:
-            successes = self.mab_problem.record[arm]['reward'] if self.mab_problem.record[arm]['reward'] > 0 else 1
-            failures = self.mab_problem.record[arm]['actions'] - self.mab_problem.record[arm]['reward'] if self.mab_problem.record[arm]['actions'] - self.mab_problem.record[arm]['reward'] > 0 else 1
+            successes = self.mab_problem.record[arm]["reward"] if self.mab_problem.record[arm]["reward"] > 0 else 1
+            failures = (
+                self.mab_problem.record[arm]["actions"] - self.mab_problem.record[arm]["reward"]
+                if self.mab_problem.record[arm]["actions"] - self.mab_problem.record[arm]["reward"] > 0
+                else 1
+            )
             self.beta_distributions_parameters[arm] = (successes, failures)
 
     @property
     def beta_dist_of_arms(self) -> Dict[str, BetaDistribution]:
-        return {arm: BetaDistribution(self.beta_distributions_parameters[arm][0], self.beta_distributions_parameters[arm][1]) for arm in self.mab_problem.arms_ids}
+        return {
+            arm: BetaDistribution(
+                self.beta_distributions_parameters[arm][0], self.beta_distributions_parameters[arm][1]
+            )
+            for arm in self.mab_problem.arms_ids
+        }
 
     def select_arm(self) -> str:
         self._update_beta_distributions()
@@ -127,9 +136,13 @@ class ThompsonSampling(MABAlgorithm):
         return selected_arm
 
     def plot_stats(self) -> plt.Figure:
-        beta_dists_of_arms:dict  = self.beta_dist_of_arms
+        beta_dists_of_arms: dict = self.beta_dist_of_arms
 
-        fig = plt.figure(figsize=(7, 7))
+        fig = plt.figure(figsize=(3, 5))
+        plt.clf()
+        plt.ylim(0, 15)
+        plt.xlim(0, 1)
+
         low_lim = min(beta.ppf(0.01, beta_dist.a, beta_dist.b) for beta_dist in beta_dists_of_arms.values())
         up_lim = max(beta.ppf(0.99, beta_dist.a, beta_dist.b) for beta_dist in beta_dists_of_arms.values())
 
@@ -139,9 +152,9 @@ class ThompsonSampling(MABAlgorithm):
             pdf = beta_dist.pdf(x)
             plt.plot(x, pdf, label=f"arm_{arm}")
 
-        plt.title('Beta Distributions of arms', fontsize='12')
-        plt.xlabel('Values of Random Variables X (0, 1)', fontsize='12')
-        plt.ylabel('Probabilities', fontsize='12')
+        plt.title("Beta Distributions of arms", fontsize="12")
+        plt.xlabel("Values of Random Variables X (0, 1)", fontsize="12")
+        plt.ylabel("Probabilities", fontsize="12")
         plt.legend(frameon=False)
         plt.tight_layout()
 
