@@ -58,6 +58,7 @@ class MABProblem:
             self.record[arm_id]["reward"] += reward
             self.record[arm_id]["reward_squared"] += reward**2
             self._history_of_play.append(arm_id)
+            self._history_of_cumulative_reward.append(self._cumulative_reward)
 
         return reward
 
@@ -80,3 +81,7 @@ class MABProblem:
     @property
     def cumulative_reward(self):
         return self._cumulative_reward
+
+    @property
+    def history_of_cumulative_reward(self):
+        return self._history_of_cumulative_reward

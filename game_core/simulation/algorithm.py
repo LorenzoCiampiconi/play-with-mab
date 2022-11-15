@@ -4,6 +4,7 @@ from collections import defaultdict
 from random import sample
 from typing import Union, Mapping, Dict, Tuple
 
+import matplotlib.pyplot as plt
 import numpy as np
 import operator
 from game_core.statistic.distribution import BetaDistribution
@@ -28,6 +29,10 @@ class MABAlgorithm(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def info(self) -> str:
+        pass
+
+    @abc.abstractmethod
+    def plot_stats(self) -> plt.Figure:
         pass
 
 

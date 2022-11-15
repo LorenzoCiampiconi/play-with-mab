@@ -18,6 +18,7 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
     mab_problem: MABProblem
 
     _cumulative_reward_fig_label = "cumulative_reward_fig"
+    _algorithm_stats_fig_label = "_algorithm_stats_fig"
 
     def __init__(self, *, simulate: Optional[bool] = False, simulation_interval=1, **kwargs):
         super().__init__(**kwargs)
@@ -65,7 +66,7 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
         if self._cumulative_reward_fig_label in self._figures:
             self._figures[self._cumulative_reward_fig_label].get_tk_widget().forget()
 
-        cumulative_reward = self.mab_problem.cumulative_reward
+        cumulative_reward = self.mab_problem.history_of_cumulative_reward
 
         figure = plt.figure()
         plt.clf()
@@ -74,9 +75,9 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
             self._simulation_window, self._cumulative_reward_fig_label, figure
         )
 
+
     def update_simulation_window(self):
         self.update_cumulative_rewards()
-        self._simulation_window["test"].update(self.mab_problem.rewards[self.mab_problem.arms_ids[0]])
 
     def read_simulation_window(self):
         event, values = self._simulation_window.read(timeout=0.01)
@@ -91,7 +92,6 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
         super().event_loop_stem(event, window)
 
         if self._simulation_window is not None:
-            self.update_simulation_window()
             self.read_simulation_window()
 
         if event == "Simulate":
@@ -101,6 +101,7 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
 
         if self._simulate and self.is_time_to_simulate:
             self.simulate(window)
+            self.update_simulation_window()
 
 
 class AlgorithmEmployingSimulatingGUIMixin(SimulatingGUIMixinABC):
@@ -121,6 +122,20 @@ class AlgorithmEmployingSimulatingGUIMixin(SimulatingGUIMixinABC):
         window.Element(arm).TKButton.invoke()
         self._last_simulation_step = time.time()
         self._total_simulation_steps += 1
+
+    def update_algorithm_stats(self):
+        if self._algorithm_stats_fig_label in self._figures:
+            self._figures[self._algorithm_stats_fig_label].get_tk_widget().forget()
+
+        figure = self._algorithm.plot_stats()
+
+        self._figures[self._cumulative_reward_fig_label] = self.draw_figure_on_window_canvas(
+            self._simulation_window, self._cumulative_reward_fig_label, figure
+        )
+
+    def update_simulation_window(self):
+        super().update_simulation_window()
+        self.update_algorithm_stats()
 
 
 class BarcelonaMABAlgorithmSimulatingGUI(AlgorithmEmployingSimulatingGUIMixin, BarcelonaMabGUI):
