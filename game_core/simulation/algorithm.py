@@ -2,10 +2,11 @@ import abc
 import random
 from collections import defaultdict
 from random import sample
-from typing import Union, Mapping, Dict
+from typing import Union, Mapping, Dict, Tuple
 
 import numpy as np
-
+import operator
+from game_core.statistic.distribution import BetaDistribution
 from game_core.statistic.mab import MABProblem
 
 
@@ -87,3 +88,27 @@ class UpperConfidenceBound1(MABAlgorithm):
 
     def info(self) -> str:
         return f"INFO - (bounds for arms are {self._upper_confidence_bounds})"
+
+
+class ThompsonSampling(MABAlgorithm):
+    def __init__(self, reset=False, **kwargs):
+        self.beta_distributions_parameters: Dict[str, Tuple[int, int]] = defaultdict(Tuple)
+        self._last_played_arm: Union[None, str] = None
+        if reset:
+            self.mab_problem.reset()
+
+    #todo: we can actually update only one arm at time
+    def _update_beta_distributions(self):
+        for arm in self.mab_problem.arms_ids:
+            successes = self.mab_problem.record[arm]['reward']
+            failures = self.mab_problem.record[arm]['actions'] - self.mab_problem.record[arm]['reward']
+            self.beta_distributions_parameters[arm] = (successes, failures)
+
+    def select_arm(self) -> str:
+        samples = {arm: BetaDistribution(self.beta_distributions_parameters[arm][0], self.beta_distributions_parameters[arm][1]).sample() for arm in self.mab_problem.arms_ids}
+        selected_arm = max(samples.items(), key=operator.itemgetter(1))[0]
+        self._last_played_arm = selected_arm
+        return selected_arm
+
+    def info(self) -> str:
+        return f"INFO - (parameters for distributions are {self._upper_confidence_bounds})"
