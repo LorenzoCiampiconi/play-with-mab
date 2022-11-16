@@ -7,7 +7,7 @@ import PySimpleGUI as sg
 from game_core.gui import img_path
 from game_core.gui.base_gui import BaseGUIABC
 from game_core.statistic.mab import MABProblem
-
+from game_core.configs.configs import color_list
 
 class BarcelonaMabGUI(BaseGUIABC):
     slot_img_file = img_path / "slot.png"
@@ -51,7 +51,7 @@ class BarcelonaMabGUI(BaseGUIABC):
         slot_img = self.get_byte_64_image(self.slot_img_file, size=self.slot_img_size)
 
         arm_col = [
-            [sg.Text(f"Arm {arm_id}", font=self.results_font_size, background_color="#35654d", text_color="BLACK")],
+            [sg.Text(f"Arm {arm_id}", font=self.results_font_size, background_color="#35654d", text_color=color_list[int(arm_id)-1])],
             [sg.Button(f"arm_{arm_id}", size=self.arm_button_size, image_data=slot_img, button_color="#35674d")],
             [sg.Text("", key=f"arm_text{arm_id}", font=self.results_font_size, background_color="#35654d", justification="center")],
         ]
@@ -104,7 +104,3 @@ class BarcelonaMabGUI(BaseGUIABC):
     def window_layout_post_process(self, window):
         for arm_id in self.mab_problem.arms_ids:
             window[f"col_{arm_id}"].Widget.configure(borderwidth=2, relief=sg.RELIEF_SOLID)
-
-    def event_loop_stem(self, event, window):
-        self.pull_by_event(event)
-        self.update_on_screen_mab_history(window)

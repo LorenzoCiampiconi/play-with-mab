@@ -9,6 +9,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from game_core.gui.bmab_gui import BarcelonaMabGUI
 from game_core.simulation.algorithm import MABAlgorithm
 from game_core.statistic.mab import MABProblem
+from game_core.configs.configs import color_list
 
 import PySimpleGUI as sg
 
@@ -81,6 +82,7 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
         cumulative_reward_by_id = self.mab_problem.history_of_cumulative_reward_by_id()
         figure = plt.figure(figsize=(7, 4))
         plt.clf()
+        plt.rcParams['axes.prop_cycle'] = plt.cycler(color=color_list)
         plt.ylim(0, self.max_simulation_steps)
         plt.xlim(0, self.max_simulation_steps)
         for arm in self.mab_problem.arms_ids:
