@@ -28,7 +28,7 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
         self._last_simulation_step = 0
         self._total_simulation_steps = 0
         self._simulation_window = None
-        self._plot_figsize = (7,7)
+        self._plot_figsize = (7, 7)
 
     @property
     def is_time_to_simulate(self):
