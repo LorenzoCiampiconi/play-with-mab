@@ -35,7 +35,7 @@ class MABAlgorithm(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def plot_stats(self, max_plays=100) -> plt.Figure:
+    def plot_stats(self, figsize, max_plays=100) -> plt.Figure:
         pass
 
     def plot_iteration_histogram(self, axs: plt.Axes, max_plays=100):
@@ -154,8 +154,8 @@ class ThompsonSampling(MABAlgorithm):
         self.iteration += 1
         return selected_arm
 
-    def plot_stats(self, max_plays=100) -> plt.Figure:
-        fig, axs = plt.subplots(2, figsize=(7, 7), gridspec_kw={"height_ratios": [2, 1]})
+    def plot_stats(self, figsize, max_plays=100) -> plt.Figure:
+        fig, axs = plt.subplots(2, figsize=figsize, gridspec_kw={"height_ratios": [2, 1]})
 
         beta_dists_of_arms: dict = self.beta_dist_of_arms
 

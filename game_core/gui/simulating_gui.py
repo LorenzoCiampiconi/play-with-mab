@@ -28,6 +28,7 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
         self._last_simulation_step = 0
         self._total_simulation_steps = 0
         self._simulation_window = None
+        self._plot_figsize = (7,7)
 
     @property
     def is_time_to_simulate(self):
@@ -90,8 +91,8 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
         plt.plot(cumulative_reward, label="Total", linewidth=3)
 
         plt.title("Cumulative Rewards", fontsize="12", fontweight="bold", color=CB_Lastminute)
-        plt.xlabel("Time Steps")
-        plt.ylabel("($)", fontweight="bold", color=CB_Gold)
+        plt.xlabel("Time Steps", fontweight="bold")
+        plt.ylabel("$", fontweight="bold", fontsize="15", color=CB_Gold)
         plt.legend(frameon=False)
         plt.tight_layout()
 
@@ -153,7 +154,7 @@ class AlgorithmEmployingSimulatingGUIMixin(SimulatingGUIMixinABC):
         return [col]
 
     def update_algorithm_stats(self):
-        figure = self._algorithm.plot_stats()
+        figure = self._algorithm.plot_stats(self._plot_figsize)
 
         self._figures[self._algorithm_stats_fig_label] = self.draw_figure_on_window_canvas(
             self._simulation_window, self._algorithm_stats_fig_label, figure, self._algorithm_stats_fig_label
