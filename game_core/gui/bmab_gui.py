@@ -60,7 +60,7 @@ class BarcelonaMabGUI(BaseGUIABC):
             expand_x=True,
             expand_y=True,
             key=f"col_{arm_id}",
-            background_color="#35654d",
+            background_color="#35654d"
         )
 
     def get_play_layout(self):
