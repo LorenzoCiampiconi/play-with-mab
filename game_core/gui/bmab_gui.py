@@ -9,6 +9,7 @@ from game_core.gui.base_gui import BaseGUIABC
 from game_core.statistic.mab import MABProblem
 from game_core.configs.configs import color_list
 
+
 class BarcelonaMabGUI(BaseGUIABC):
     slot_img_file = img_path / "slot.png"
     arm_button_size = (0.1, 0.1)
@@ -51,9 +52,24 @@ class BarcelonaMabGUI(BaseGUIABC):
         slot_img = self.get_byte_64_image(self.slot_img_file, size=self.slot_img_size)
 
         arm_col = [
-            [sg.Text(f"Arm {arm_id}", font=self.results_font_size, background_color="#35654d", text_color=color_list[int(arm_id)-1])],
+            [
+                sg.Text(
+                    f"Arm {arm_id}",
+                    font=self.results_font_size,
+                    background_color="#35654d",
+                    text_color=color_list[int(arm_id) - 1],
+                )
+            ],
             [sg.Button(f"arm_{arm_id}", size=self.arm_button_size, image_data=slot_img, button_color="#35674d")],
-            [sg.Text("", key=f"arm_text{arm_id}", font=self.results_font_size, background_color="#35654d", justification="center")],
+            [
+                sg.Text(
+                    "",
+                    key=f"arm_text{arm_id}",
+                    font=self.results_font_size,
+                    background_color="#35654d",
+                    justification="center",
+                )
+            ],
         ]
         return sg.Column(
             arm_col,
@@ -62,7 +78,7 @@ class BarcelonaMabGUI(BaseGUIABC):
             expand_x=True,
             expand_y=True,
             key=f"col_{arm_id}",
-            background_color="#35654d"
+            background_color="#35654d",
         )
 
     def get_play_layout(self):
@@ -81,7 +97,7 @@ class BarcelonaMabGUI(BaseGUIABC):
         if all(r in {0, 1} for r in rewards):
             s_rewards = [self.mapping[r] for r in rewards]
             if len(rewards) > self._max_length_col - 1:
-                shown_rewards = s_rewards[-self._max_length_col - 1:]
+                shown_rewards = s_rewards[-self._max_length_col - 1 :]
                 collapsed_rewards = [
                     f"... {sum(rewards[:-self._max_length_col - 1])}{self.binary_win_label}, "
                     f"{len(rewards) - sum(rewards[:-self._max_length_col - 1])}{self.binary_loss_label} ..."

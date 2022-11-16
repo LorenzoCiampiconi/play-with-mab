@@ -9,7 +9,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from game_core.gui.bmab_gui import BarcelonaMabGUI
 from game_core.simulation.algorithm import MABAlgorithm
 from game_core.statistic.mab import MABProblem
-from game_core.configs.configs import color_list
+from game_core.configs.configs import color_list, CB_Lastminute, CB_Gold
 
 import PySimpleGUI as sg
 
@@ -82,16 +82,16 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
         cumulative_reward_by_id = self.mab_problem.history_of_cumulative_reward_by_id()
         figure = plt.figure(figsize=(7, 4))
         plt.clf()
-        plt.rcParams['axes.prop_cycle'] = plt.cycler(color=color_list)
+        plt.rcParams["axes.prop_cycle"] = plt.cycler(color=color_list)
         plt.ylim(0, self.max_simulation_steps)
         plt.xlim(0, self.max_simulation_steps)
         for arm in self.mab_problem.arms_ids:
             plt.plot(cumulative_reward_by_id[arm], label=f"Arm {arm}", linewidth=2.5)
         plt.plot(cumulative_reward, label="Total", linewidth=3)
 
-        plt.title("Cumulative Rewards", fontsize="12")
-        plt.xlabel("time-steps")
-        plt.ylabel("Cumulative reward ($)")
+        plt.title("Cumulative Rewards", fontsize="12", fontweight="bold", color=CB_Lastminute)
+        plt.xlabel("Time Steps")
+        plt.ylabel("($)", fontweight="bold", color=CB_Gold)
         plt.legend(frameon=False)
         plt.tight_layout()
 
@@ -148,11 +148,9 @@ class AlgorithmEmployingSimulatingGUIMixin(SimulatingGUIMixinABC):
         self._total_simulation_steps += 1
 
     def _get_simulation_window_layout(self):
-        col = [[sg.Canvas(key=self._cumulative_reward_fig_label)], [sg.Canvas(key=self._algorithm_stats_fig_label)]],
+        col = ([[sg.Canvas(key=self._cumulative_reward_fig_label)], [sg.Canvas(key=self._algorithm_stats_fig_label)]],)
 
-        return [
-            col
-        ]
+        return [col]
 
     def update_algorithm_stats(self):
         figure = self._algorithm.plot_stats()
