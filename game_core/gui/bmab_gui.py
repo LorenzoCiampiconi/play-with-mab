@@ -87,6 +87,3 @@ class BarcelonaMabGUI(BaseGUIABC):
         for arm_id in self.mab_problem.arms_ids:
             window[f"col_{arm_id}"].Widget.configure(borderwidth=2, relief=sg.RELIEF_SOLID)
 
-    def event_loop_stem(self, event, window):
-        self.pull_by_event(event)
-        self.update_on_screen_mab_history(window)

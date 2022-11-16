@@ -41,12 +41,13 @@ class BetaDistribution(DistributionABC):
 
 
 class BernoulliDistribution(DistributionABC):
-    def __init__(self, p):
+    def __init__(self, p, seed=None):
         self._p = p
+        self.rdstate = np.random.RandomState(seed) if seed is not None else None
 
     @property
     def p(self):
         return self._p
 
     def sample(self) -> float:
-        return binomial(1, self._p, 1)[0]
+        return self.rdstate.binomial(1, self._p, 1)[0] if self.rdstate is not None else binomial(1, self._p, 1)[0]

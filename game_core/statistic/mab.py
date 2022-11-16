@@ -31,9 +31,9 @@ class MABProblem:
 
     @staticmethod
     def _get_default_arms():
-        b_1 = BernoulliDistribution(0.2)
-        b_2 = BernoulliDistribution(0.4)
-        b_3 = BernoulliDistribution(0.8)
+        b_1 = BernoulliDistribution(0.2, 99999)
+        b_2 = BernoulliDistribution(0.4, 87)
+        b_3 = BernoulliDistribution(0.8, 100)
 
         arms = {
             "1": b_1,
