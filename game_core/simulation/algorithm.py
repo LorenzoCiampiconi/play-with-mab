@@ -40,7 +40,8 @@ class MABAlgorithm(metaclass=abc.ABCMeta):
 
     def plot_iteration_histogram(self, axs: plt.Axes, max_plays=100):
         axs.set_xlim(0, max_plays)
-        axs.set(xlabel="time_steps", ylabel="arm")
+        axs.set_xlabel("Time Steps", fontdict=dict(weight='bold'))
+        axs.set_ylabel("Arm", fontdict=dict(weight='bold'))
         axs.set_title("Number of plays per arm", loc="right", fontsize=10, fontweight="bold")
         labels = []
         plays = []
