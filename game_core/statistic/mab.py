@@ -92,3 +92,7 @@ class MABProblem:
     @property
     def history_of_cumulative_reward(self):
         return self._history_of_cumulative_reward
+
+    @property
+    def history_of_play(self):
+        return self._history_of_play

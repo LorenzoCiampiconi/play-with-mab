@@ -5,6 +5,7 @@ from numpy.random import normal, binomial
 from numpy.random import beta
 from scipy import stats
 
+np.random.seed(3)
 
 class DistributionABC(metaclass=abc.ABCMeta):
     @abc.abstractmethod
@@ -41,6 +42,7 @@ class BetaDistribution(DistributionABC):
 
 
 class BernoulliDistribution(DistributionABC):
+
     def __init__(self, p):
         self._p = p
 

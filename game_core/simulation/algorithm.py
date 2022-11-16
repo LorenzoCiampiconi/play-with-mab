@@ -5,6 +5,7 @@ from random import sample
 from scipy.stats import beta
 from typing import Union, Mapping, Dict, Tuple
 
+import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
 import operator
@@ -33,8 +34,18 @@ class MABAlgorithm(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def plot_stats(self) -> plt.Figure:
+    def plot_stats(self, max_plays=100) -> plt.Figure:
         pass
+
+    def plot_iteration_histogram(self, axs: plt.Axes, max_plays=100):
+        axs.set_xlim(0, max_plays)
+        axs.set(xlabel='time_steps')
+        labels = []
+        plays = []
+        for arm in self.mab_problem.arms_ids:
+            labels.append(arm)
+            plays.append(self.mab_problem.record[arm]["actions"])
+        sns.barplot(x=plays, y=labels, axes=axs)
 
 
 class RandomAlgorithm(MABAlgorithm):
@@ -135,28 +146,31 @@ class ThompsonSampling(MABAlgorithm):
         self._last_played_arm = selected_arm
         return selected_arm
 
-    def plot_stats(self) -> plt.Figure:
-        beta_dists_of_arms: dict = self.beta_dist_of_arms
+    def plot_stats(self, max_plays=100) -> plt.Figure:
+        fig, axs = plt.subplots(2, figsize=(7,7))
 
-        fig = plt.figure(figsize=(7, 4))
-        plt.clf()
+        beta_dists_of_arms: dict = self.beta_dist_of_arms
 
         low_lim = min(beta.ppf(0.01, beta_dist.a, beta_dist.b) for beta_dist in beta_dists_of_arms.values())
         up_lim = 1
 
-        plt.ylim(0, 10)
-        plt.xlim(0, up_lim)
+        fig.suptitle("Algorithm parameters", fontsize=12)
+
+        axs[0].set_ylim(0, 10)
+        axs[0].set_xlim(0, up_lim)
 
         x = np.linspace(low_lim, up_lim, 1000)
 
         for arm, beta_dist in beta_dists_of_arms.items():
             pdf = beta_dist.pdf(x)
-            plt.plot(x, pdf, label=f"Arm {arm}")
+            axs[0].plot(x, pdf, label=f"Arm {arm}")
 
-        plt.title("Beta Distributions of arms", fontsize="12")
-        plt.xlabel("Values of Random Variables X (0, 1)", fontsize="12")
-        plt.ylabel("Probabilities", fontsize="12")
-        plt.legend(frameon=False)
+        axs[0].title.set_text("Beta Distributions of arms")
+        axs[0].title.set_fontsize(12)
+        axs[0].legend(frameon=False)
+
+        self.plot_iteration_histogram(axs[1], max_plays=max_plays)
+
         plt.tight_layout()
 
         return fig

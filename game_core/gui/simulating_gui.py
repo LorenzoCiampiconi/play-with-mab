@@ -88,8 +88,8 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
         plt.plot(cumulative_reward, label="Total", linewidth=3)
 
         plt.title("Cumulative Rewards", fontsize="12")
-        plt.xlabel("time-steps", fontsize="12")
-        plt.ylabel("Cumulative reward ($)", fontsize="12")
+        plt.xlabel("time-steps")
+        plt.ylabel("Cumulative reward ($)")
         plt.legend(frameon=False)
         plt.tight_layout()
 
