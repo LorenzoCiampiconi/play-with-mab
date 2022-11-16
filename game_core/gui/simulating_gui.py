@@ -92,7 +92,7 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
 
         plt.title("Cumulative Rewards", fontsize="12", fontweight="bold", color=CB_Lastminute)
         plt.xlabel("Time Steps", fontweight="bold")
-        plt.ylabel("$", fontweight="bold", fontsize="15", color=CB_Gold)
+        plt.ylabel("$", fontweight="bold", fontsize="15", color=CB_Gold, rotation=0)
         plt.legend(frameon=False)
         plt.tight_layout()
 
