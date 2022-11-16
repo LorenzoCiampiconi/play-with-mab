@@ -28,7 +28,7 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
         self._last_simulation_step = 0
         self._total_simulation_steps = 0
         self._simulation_window = None
-        self._plot_figsize = (7, 7)
+        self._plot_figsize = (5,5)
 
     @property
     def is_time_to_simulate(self):
@@ -81,7 +81,7 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
     def update_cumulative_rewards(self):
         cumulative_reward = self.mab_problem.history_of_cumulative_reward
         cumulative_reward_by_id = self.mab_problem.history_of_cumulative_reward_by_id()
-        figure = plt.figure(figsize=(7, 4))
+        figure = plt.figure(figsize=(5,4))
         plt.clf()
         plt.rcParams["axes.prop_cycle"] = plt.cycler(color=color_list)
         plt.ylim(0, self.max_simulation_steps)
@@ -149,7 +149,7 @@ class AlgorithmEmployingSimulatingGUIMixin(SimulatingGUIMixinABC):
         self._total_simulation_steps += 1
 
     def _get_simulation_window_layout(self):
-        col = ([[sg.Canvas(key=self._cumulative_reward_fig_label)], [sg.Canvas(key=self._algorithm_stats_fig_label)]],)
+        col = [[sg.Canvas(key=self._cumulative_reward_fig_label)], [sg.Canvas(key=self._algorithm_stats_fig_label)], [sg.Button("Stop", size=(15, 1)), sg.Button("Restart", size=(15, 1))]],
 
         return [col]
 
