@@ -7,7 +7,7 @@ import PySimpleGUI as sg
 from game_core.gui import img_path
 from game_core.gui.base_gui import BaseGUIABC
 from game_core.statistic.mab import MABProblem
-
+from game_core.configs.configs import color_list
 
 class BarcelonaMabGUI(BaseGUIABC):
     slot_img_file = img_path / "slot.png"
@@ -15,7 +15,7 @@ class BarcelonaMabGUI(BaseGUIABC):
     button_img_file = img_path / "button3.png"
     arm_button_size = (0.1, 0.1)
     slot_img_size = (300, 200)
-    results_font_size = ("helvetica", 25)
+    results_font_size = ("Comic sans", 25)
 
     def __init__(self, *, configuration=None, **kwargs):
         super().__init__(**kwargs)
@@ -49,9 +49,9 @@ class BarcelonaMabGUI(BaseGUIABC):
         slot_img = self.get_byte_64_image(self.slot_img_file, size=self.slot_img_size)
 
         arm_col = [
-            [sg.Text(f"Arm {arm_id}", font=self.results_font_size, background_color="#35654d", text_color="BLACK")],
+            [sg.Text(f"Arm {arm_id}", font=self.results_font_size, background_color="#35654d", text_color=color_list[int(arm_id)-1])],
             [sg.Button(f"arm_{arm_id}", size=self.arm_button_size, image_data=slot_img, button_color="#35674d")],
-            [sg.Text("", key=f"arm_text{arm_id}", font=self.results_font_size, background_color="#35654d")],
+            [sg.Text("", key=f"arm_text{arm_id}", font=self.results_font_size, background_color="#35654d", justification='c')],
         ]
         return sg.Column(
             arm_col,
@@ -77,7 +77,7 @@ class BarcelonaMabGUI(BaseGUIABC):
 
     def update_on_screen_mab_history(self, window):
         for arm_id in self.mab_problem.arms_ids:
-            arm_string_results = [str(r) for r in self.mab_problem.rewards[arm_id]]
+            arm_string_results = ["$$$" if r==1 else "X" for r in self.mab_problem.rewards[arm_id]]
             window[f"arm_text{arm_id}"].update("\n".join(arm_string_results))
 
     def prepare_for_play(self):

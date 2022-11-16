@@ -10,7 +10,7 @@ import numpy as np
 import operator
 from game_core.statistic.distribution import BetaDistribution
 from game_core.statistic.mab import MABProblem
-
+from game_core.configs.configs import color_list
 
 class MABAlgorithm(metaclass=abc.ABCMeta):
     algorithm_label = "NotImplemented"
@@ -106,6 +106,7 @@ class ThompsonSampling(MABAlgorithm):
         super().__init__(**kwargs)
         self.beta_distributions_parameters: Dict[str, Tuple[int, int]] = defaultdict(lambda: (1, 1))
         self._last_played_arm: Union[None, str] = None
+        self.iteration = 0
         if reset:
             self.mab_problem.reset()
 
@@ -129,10 +130,15 @@ class ThompsonSampling(MABAlgorithm):
         }
 
     def select_arm(self) -> str:
-        self._update_beta_distributions()
-        samples = {arm: beta_dist.sample() for arm, beta_dist in self.beta_dist_of_arms.items()}
-        selected_arm = max(samples.items(), key=operator.itemgetter(1))[0]
-        self._last_played_arm = selected_arm
+        if self.iteration < 3:
+            selected_arm = self.iteration + 1
+            self._last_played_arm = selected_arm
+        else:
+            self._update_beta_distributions()
+            samples = {arm: beta_dist.sample() for arm, beta_dist in self.beta_dist_of_arms.items()}
+            selected_arm = max(samples.items(), key=operator.itemgetter(1))[0]
+            self._last_played_arm = selected_arm
+        self.iteration += 1
         return selected_arm
 
     def plot_stats(self) -> plt.Figure:
@@ -140,6 +146,7 @@ class ThompsonSampling(MABAlgorithm):
 
         fig = plt.figure(figsize=(7, 4))
         plt.clf()
+        plt.rcParams['axes.prop_cycle'] = plt.cycler(color=color_list)
 
         low_lim = min(beta.ppf(0.01, beta_dist.a, beta_dist.b) for beta_dist in beta_dists_of_arms.values())
         up_lim = 1
