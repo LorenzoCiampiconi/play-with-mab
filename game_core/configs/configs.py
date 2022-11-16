@@ -6,6 +6,9 @@ CB91_Violet = "#661D98"
 CB91_Amber = "#F5B14C"
 CB_Lastminute = "#F2007D"
 CB_Gold = "#FFC900"
-color_list = [CB91_Blue, CB91_Pink, CB91_Green, CB_Lastminute, CB91_Purple, CB91_Violet]
+CB_Sunset = "#441f72"
+CB_Aquamarine = "#2ABEB9"
+CB_Provence = "#4972D1"
+color_list = [CB_Sunset, CB_Aquamarine, CB_Provence, CB_Lastminute, CB91_Purple, CB91_Violet]
 
 distribution_seeds = []
