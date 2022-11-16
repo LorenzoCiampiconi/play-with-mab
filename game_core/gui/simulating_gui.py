@@ -14,7 +14,7 @@ import PySimpleGUI as sg
 
 
 class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
-    max_simulation_steps = 50
+    max_simulation_steps = 100
     mab_problem: MABProblem
 
     _cumulative_reward_fig_label = "cumulative_reward_fig"

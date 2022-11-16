@@ -1,4 +1,4 @@
-from typing import Union, Tuple
+from typing import Union, Tuple, Optional
 
 import io
 from PIL import Image
@@ -11,16 +11,18 @@ from game_core.statistic.mab import MABProblem
 
 class BarcelonaMabGUI(BaseGUIABC):
     slot_img_file = img_path / "slot.png"
-    background = img_path / "background.png"
-    button_img_file = img_path / "button3.png"
     arm_button_size = (0.1, 0.1)
     slot_img_size = (300, 200)
     results_font_size = ("helvetica", 25)
+    binary_win_label = "$"
+    binary_loss_label = "X"
+    mapping = {0: binary_loss_label, 1: binary_win_label}
 
-    def __init__(self, *, configuration=None, **kwargs):
+    def __init__(self, *, configuration=None, max_length_col: Optional[int] = 14, **kwargs):
         super().__init__(**kwargs)
         self.mab_problem: Union[None, MABProblem] = None
         self.instantiate_problem(configuration=configuration)
+        self._max_length_col = max_length_col
 
     @staticmethod
     def get_byte_64_image(img: str, size: Tuple[int, int] = (200, 200)):
@@ -51,7 +53,7 @@ class BarcelonaMabGUI(BaseGUIABC):
         arm_col = [
             [sg.Text(f"Arm {arm_id}", font=self.results_font_size, background_color="#35654d", text_color="BLACK")],
             [sg.Button(f"arm_{arm_id}", size=self.arm_button_size, image_data=slot_img, button_color="#35674d")],
-            [sg.Text("", key=f"arm_text{arm_id}", font=self.results_font_size, background_color="#35654d")],
+            [sg.Text("", key=f"arm_text{arm_id}", font=self.results_font_size, background_color="#35654d", justification="center")],
         ]
         return sg.Column(
             arm_col,
@@ -75,9 +77,25 @@ class BarcelonaMabGUI(BaseGUIABC):
         self.pull_by_event(event)
         self.update_on_screen_mab_history(window)
 
+    def _process_rewards_for_ui(self, rewards):
+        if all(r in {0, 1} for r in rewards):
+            s_rewards = [self.mapping[r] for r in rewards]
+            if len(rewards) > self._max_length_col - 1:
+                shown_rewards = s_rewards[-self._max_length_col - 1:]
+                collapsed_rewards = [
+                    f"... {sum(rewards[:-self._max_length_col - 1])}{self.binary_win_label}, "
+                    f"{len(rewards) - sum(rewards[:-self._max_length_col - 1])}{self.binary_loss_label} ..."
+                ]
+                s_rewards = collapsed_rewards + shown_rewards
+
+            return s_rewards
+        else:
+            return [str(r) for r in rewards]
+
     def update_on_screen_mab_history(self, window):
         for arm_id in self.mab_problem.arms_ids:
-            arm_string_results = [str(r) for r in self.mab_problem.rewards[arm_id]]
+            arm_string_results = self._process_rewards_for_ui(self.mab_problem.rewards[arm_id])
+
             window[f"arm_text{arm_id}"].update("\n".join(arm_string_results))
 
     def prepare_for_play(self):
