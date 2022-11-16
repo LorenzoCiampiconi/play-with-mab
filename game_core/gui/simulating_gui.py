@@ -57,7 +57,7 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
         self._simulation_window = sg.Window(
             "Simulation Window",
             layout,
-            size=(800, 900),
+            size=(800, 1000),
             finalize=True,
             background_color="white",
             element_justification="c",

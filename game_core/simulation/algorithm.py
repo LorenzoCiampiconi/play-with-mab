@@ -39,7 +39,8 @@ class MABAlgorithm(metaclass=abc.ABCMeta):
 
     def plot_iteration_histogram(self, axs: plt.Axes, max_plays=100):
         axs.set_xlim(0, max_plays)
-        axs.set(xlabel='time_steps')
+        axs.set(xlabel='time_steps', ylabel="arm")
+        axs.set_title("Number of plays per arm", loc="right", fontsize=10)
         labels = []
         plays = []
         for arm in self.mab_problem.arms_ids:
@@ -147,14 +148,14 @@ class ThompsonSampling(MABAlgorithm):
         return selected_arm
 
     def plot_stats(self, max_plays=100) -> plt.Figure:
-        fig, axs = plt.subplots(2, figsize=(7,7))
+        fig, axs = plt.subplots(2, figsize=(7, 7), gridspec_kw={'height_ratios': [2, 1]})
 
         beta_dists_of_arms: dict = self.beta_dist_of_arms
 
         low_lim = min(beta.ppf(0.01, beta_dist.a, beta_dist.b) for beta_dist in beta_dists_of_arms.values())
         up_lim = 1
 
-        fig.suptitle("Algorithm parameters", fontsize=12)
+        fig.suptitle("Algorithm parameters", fontsize=12, fontweight="bold")
 
         axs[0].set_ylim(0, 10)
         axs[0].set_xlim(0, up_lim)
@@ -165,8 +166,7 @@ class ThompsonSampling(MABAlgorithm):
             pdf = beta_dist.pdf(x)
             axs[0].plot(x, pdf, label=f"Arm {arm}")
 
-        axs[0].title.set_text("Beta Distributions of arms")
-        axs[0].title.set_fontsize(12)
+        axs[0].set_title("Beta Distributions of arms", loc="right", fontsize=10)
         axs[0].legend(frameon=False)
 
         self.plot_iteration_histogram(axs[1], max_plays=max_plays)
