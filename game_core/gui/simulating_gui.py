@@ -20,7 +20,8 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
     mab_problem: MABProblem
     play_image_file = img_path / "play_button.png"
     pause_image_file = img_path / "pause_button.png"
-    sim_button_size = (0.4, 0.4)
+    regret_image_file = img_path / "regret.png"
+    sim_button_size = (2, 2)
 
     _cumulative_reward_fig_label = "cumulative_reward_fig"
 
@@ -32,7 +33,9 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
         self._last_simulation_step = 0
         self._total_simulation_steps = 0
         self._simulation_window = None
-        self._plot_figsize = (6,6)
+        self._plot_regret = False
+        self._plot_expected_reward = False
+        self._plot_figsize = (6, 6)
 
     @property
     def is_time_to_simulate(self):
@@ -92,7 +95,15 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
         plt.xlim(0, self.max_simulation_steps)
         for arm in self.mab_problem.arms_ids:
             plt.plot(cumulative_reward_by_id[arm], label=f"Arm {arm}", linewidth=2.5)
+
         plt.plot(cumulative_reward, label="Total", linewidth=3)
+
+        expected_reward = self.mab_problem.best_arm.get_cumulate_expected_value_for_steps(self.mab_problem.total_actions)
+        if self._plot_expected_reward and self.mab_problem.best_arm is not None:
+            plt.plot(expected_reward, label=f"Expected reward", linewidth=2.5, color=CB_Gold)
+        if self._plot_regret and self.mab_problem.best_arm is not None:
+            regret = self.mab_problem.regret_history
+            plt.plot(regret, label=f"Regret", linewidth=2.5)
 
         plt.title("Cumulative Rewards", fontsize="12", fontweight="bold", color=CB_Lastminute)
         plt.xlabel("Time Steps", fontweight="bold")
@@ -113,6 +124,12 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
             self._simulate = True
         elif event == "Pause":
             self._simulate = False
+        elif event == "Regret":
+            self._plot_regret = not self._plot_regret
+            self.update_simulation_window()
+        elif event == "Expectation":
+            self._plot_expected_reward = not self._plot_expected_reward
+            self.update_simulation_window()
         elif event == sg.WIN_CLOSED:  # if user closes window or clicks cancel
             self._simulation_window = None
             self._simulate = False
@@ -157,8 +174,9 @@ class AlgorithmEmployingSimulatingGUIMixin(SimulatingGUIMixinABC):
         self._total_simulation_steps += 1
 
     def _get_simulation_window_layout(self):
-        play_img = self.get_byte_64_image(self.play_image_file, size=(50,50))
-        pause_img = self.get_byte_64_image(self.pause_image_file, size=(50,50))
+        play_img = self.get_byte_64_image(self.play_image_file, size=(30, 30))
+        pause_img = self.get_byte_64_image(self.pause_image_file, size=(30, 30))
+        regret_img = self.get_byte_64_image(self.regret_image_file, size=(67, 67))
         col = [
                   [sg.Canvas(key=self._cumulative_reward_fig_label)],
                   [sg.Canvas(key=self._algorithm_stats_fig_label)],
@@ -167,7 +185,10 @@ class AlgorithmEmployingSimulatingGUIMixin(SimulatingGUIMixinABC):
         return [
             col, [
                       sg.Button("Play", size=self.sim_button_size, image_data=play_img, button_color=CB_Lastminute),
-                      sg.Button("Pause", size=self.sim_button_size, image_data=pause_img, button_color=CB_Lastminute)
+                      sg.Button("Pause", size=self.sim_button_size, image_data=pause_img, button_color=CB_Lastminute),
+                      sg.Button("Regret",  button_color=CB_Lastminute),
+                      # sg.Button("Regret", image_data=regret_img, button_color=CB_Lastminute),
+                      sg.Button("Expectation",  button_color=CB_Lastminute),
                   ]
         ]
 

@@ -20,6 +20,7 @@ class MABAlgorithm(metaclass=abc.ABCMeta):
 
     def __init__(self, *, mab_problem: MABProblem):
         self._mab_problem: MABProblem = mab_problem
+        self.set_mab_problem_best_arm() #todo refactor
 
     @property
     def mab_problem(self):
@@ -37,6 +38,11 @@ class MABAlgorithm(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def plot_stats(self, figsize, max_plays=100) -> plt.Figure:
         pass
+
+    def set_mab_problem_best_arm(self):
+        arms_w_expected_value = [v for v in self.mab_problem.arms.values()]
+        arms_w_expected_value.sort(key=lambda x: x.expected_value, reverse=True)
+        self._mab_problem.set_best_arm(arms_w_expected_value[0])
 
     def plot_iteration_histogram(self, axs: plt.Axes, max_plays=100):
         axs.set_xlim(0, max_plays)
@@ -109,7 +115,7 @@ class UpperConfidenceBound1(MABAlgorithm):
     def info(self) -> str:
         return f"INFO - (bounds for arms are {self._upper_confidence_bounds})"
 
-    def plot_stats(self) -> plt.Figure:
+    def plot_stats(self, figsize, max_plays=100) -> plt.Figure:
         return plt.figure()
 
 
@@ -172,7 +178,7 @@ class ThompsonSampling(MABAlgorithm):
 
         for arm, beta_dist in beta_dists_of_arms.items():
             pdf = beta_dist.pdf(x)
-            axs[0].plot(x, pdf, label=f"Arm {arm}")
+            axs[0].plot(x, pdf, label=f"Arm {arm}", linewidth=3)
 
         axs[0].set_title("Beta Distributions of arms", loc="right", fontsize=10, fontweight="bold")
         axs[0].legend(frameon=False)

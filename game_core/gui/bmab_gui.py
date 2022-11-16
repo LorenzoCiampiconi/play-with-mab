@@ -114,9 +114,6 @@ class BarcelonaMabGUI(BaseGUIABC):
 
             window[f"arm_text{arm_id}"].update("\n".join(arm_string_results))
 
-    def prepare_for_play(self):
-        self.instantiate_problem()
-
     def window_layout_post_process(self, window):
         for arm_id in self.mab_problem.arms_ids:
             window[f"col_{arm_id}"].Widget.configure(borderwidth=2, relief=sg.RELIEF_SOLID)

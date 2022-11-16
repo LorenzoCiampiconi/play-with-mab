@@ -11,6 +11,21 @@ class DistributionABC(metaclass=abc.ABCMeta):
     def sample(self) -> float:
         pass
 
+    @property
+    def expected_value(self) -> float:
+        pass
+
+    def get_cumulate_expected_value_for_steps(self, steps):
+        cumulated_expected_values = []
+        cumulated_expected_value = 0
+
+        for _ in range(steps):
+            cev = cumulated_expected_value + self.expected_value
+            cumulated_expected_values.append(cev)
+            cumulated_expected_value = cev
+
+        return cumulated_expected_values
+
 
 class GaussianDistribution(DistributionABC):
     def __init__(self, mean, std_dev):
@@ -19,6 +34,10 @@ class GaussianDistribution(DistributionABC):
 
     def sample(self) -> float:
         return normal(loc=self._mean, scale=self._std_dev)
+
+    @property
+    def expected_value(self) -> float:
+        return self._mean
 
 
 class PositiveGaussianDistribution(GaussianDistribution):
@@ -39,6 +58,10 @@ class BetaDistribution(DistributionABC):
     def pdf(self, x):
         return stats.beta.pdf(x, self.a, self.b)
 
+    @property
+    def expected_value(self) -> float:
+        return self.a / (self.a + self.b)
+
 
 class BernoulliDistribution(DistributionABC):
     def __init__(self, p, seed=None):
@@ -51,3 +74,7 @@ class BernoulliDistribution(DistributionABC):
 
     def sample(self) -> float:
         return self.rdstate.binomial(1, self._p, 1)[0] if self.rdstate is not None else binomial(1, self._p, 1)[0]
+
+    @property
+    def expected_value(self) -> float:
+        return self._p

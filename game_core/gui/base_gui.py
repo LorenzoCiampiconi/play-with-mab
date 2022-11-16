@@ -30,7 +30,6 @@ class BaseGUIABC(metaclass=abc.ABCMeta):
 
         return bio.getvalue()
 
-    @abc.abstractmethod
     def prepare_for_play(self):
         pass
 
