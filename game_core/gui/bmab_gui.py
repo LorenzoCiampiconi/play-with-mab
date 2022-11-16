@@ -100,7 +100,7 @@ class BarcelonaMabGUI(BaseGUIABC):
                 shown_rewards = s_rewards[-self._max_length_col - 1 :]
                 collapsed_rewards = [
                     f"... {sum(rewards[:-self._max_length_col - 1])}{self.binary_win_label}, "
-                    f"{len(rewards) - sum(rewards[:-self._max_length_col - 1])}{self.binary_loss_label} ..."
+                    f"{len(rewards[:-self._max_length_col - 1]) - sum(rewards[:-self._max_length_col - 1])}{self.binary_loss_label} ..."
                 ]
                 s_rewards = collapsed_rewards + shown_rewards
 

@@ -3,7 +3,6 @@ import time
 from typing import Optional, Type
 
 import matplotlib.pyplot as plt
-import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 from game_core.gui import img_path
@@ -21,6 +20,7 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
     play_image_file = img_path / "play_button.png"
     pause_image_file = img_path / "pause_button.png"
     regret_image_file = img_path / "regret.png"
+    expectation_image_file = img_path / "expectations.png"
     sim_button_size = (2, 2)
 
     _cumulative_reward_fig_label = "cumulative_reward_fig"
@@ -91,7 +91,7 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
         figure = plt.figure(figsize=(6, 3.5))
         plt.clf()
         plt.rcParams["axes.prop_cycle"] = plt.cycler(color=color_list)
-        plt.ylim(0, self.max_simulation_steps)
+        plt.ylim(0, 80)
         plt.xlim(0, self.max_simulation_steps)
         for arm in self.mab_problem.arms_ids:
             plt.plot(cumulative_reward_by_id[arm], label=f"Arm {arm}", linewidth=2.5)
@@ -177,6 +177,7 @@ class AlgorithmEmployingSimulatingGUIMixin(SimulatingGUIMixinABC):
         play_img = self.get_byte_64_image(self.play_image_file, size=(30, 30))
         pause_img = self.get_byte_64_image(self.pause_image_file, size=(30, 30))
         regret_img = self.get_byte_64_image(self.regret_image_file, size=(67, 67))
+        expectation_img = self.get_byte_64_image(self.expectation_image_file, size=(120, 67))
         col = [
                   [sg.Canvas(key=self._cumulative_reward_fig_label)],
                   [sg.Canvas(key=self._algorithm_stats_fig_label)],
@@ -186,9 +187,9 @@ class AlgorithmEmployingSimulatingGUIMixin(SimulatingGUIMixinABC):
             col, [
                       sg.Button("Play", size=self.sim_button_size, image_data=play_img, button_color=CB_Lastminute),
                       sg.Button("Pause", size=self.sim_button_size, image_data=pause_img, button_color=CB_Lastminute),
-                      sg.Button("Regret",  button_color=CB_Lastminute),
-                      # sg.Button("Regret", image_data=regret_img, button_color=CB_Lastminute),
-                      sg.Button("Expectation",  button_color=CB_Lastminute),
+                      # sg.Button("Regret",  button_color=CB_Lastminute),
+                      sg.Button("Regret", image_data=regret_img, button_color=CB_Lastminute),
+                      sg.Button("Expectation",  image_data=expectation_img, button_color=CB_Lastminute),
                   ]
         ]
 
