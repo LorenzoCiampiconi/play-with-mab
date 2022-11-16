@@ -15,7 +15,7 @@ import PySimpleGUI as sg
 
 
 class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
-    max_simulation_steps = 50
+    max_simulation_steps = 100
     mab_problem: MABProblem
 
     _cumulative_reward_fig_label = "cumulative_reward_fig"
@@ -58,7 +58,7 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
         self._simulation_window = sg.Window(
             "Simulation Window",
             layout,
-            size=(800, 900),
+            size=(800, 1000),
             finalize=True,
             background_color="white",
             element_justification="c",
@@ -90,8 +90,8 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
         plt.plot(cumulative_reward, label="Total", linewidth=3)
 
         plt.title("Cumulative Rewards", fontsize="12")
-        plt.xlabel("time-steps", fontsize="12")
-        plt.ylabel("Cumulative reward ($)", fontsize="12")
+        plt.xlabel("time-steps")
+        plt.ylabel("Cumulative reward ($)")
         plt.legend(frameon=False)
         plt.tight_layout()
 

@@ -41,6 +41,7 @@ class BetaDistribution(DistributionABC):
 
 
 class BernoulliDistribution(DistributionABC):
+
     def __init__(self, p, seed=None):
         self._p = p
         self.rdstate = np.random.RandomState(seed) if seed is not None else None
