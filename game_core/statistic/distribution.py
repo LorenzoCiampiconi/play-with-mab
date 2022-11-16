@@ -7,6 +7,9 @@ from scipy import stats
 
 
 class DistributionABC(metaclass=abc.ABCMeta):
+    def reset_seed(self):
+        pass
+
     @abc.abstractmethod
     def sample(self) -> float:
         pass
@@ -66,7 +69,11 @@ class BetaDistribution(DistributionABC):
 class BernoulliDistribution(DistributionABC):
     def __init__(self, p, seed=None):
         self._p = p
+        self._seed = seed
         self.rdstate = np.random.RandomState(seed) if seed is not None else None
+
+    def reset_seed(self):
+        self.rdstate = np.random.RandomState(self._seed) if self._seed is not None else None
 
     @property
     def p(self):
