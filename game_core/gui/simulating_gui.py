@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
+from game_core.gui import img_path
 from game_core.gui.bmab_gui import BarcelonaMabGUI
 from game_core.simulation.algorithm import MABAlgorithm
 from game_core.statistic.mab import MABProblem
@@ -17,6 +18,9 @@ import PySimpleGUI as sg
 class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
     max_simulation_steps = 100
     mab_problem: MABProblem
+    play_image_file = img_path / "play_button.png"
+    pause_image_file = img_path / "pause_button.png"
+    sim_button_size = (0.4, 0.4)
 
     _cumulative_reward_fig_label = "cumulative_reward_fig"
 
@@ -28,7 +32,7 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
         self._last_simulation_step = 0
         self._total_simulation_steps = 0
         self._simulation_window = None
-        self._plot_figsize = (5,5)
+        self._plot_figsize = (6,6)
 
     @property
     def is_time_to_simulate(self):
@@ -52,14 +56,14 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
         return self._simulation_interval / 2
 
     def _get_simulation_window_layout(self):
-        return [[sg.Canvas(key=self._cumulative_reward_fig_label)]]
+        return [[sg.Canvas(key=self._cumulative_reward_fig_label)]] # todo objectify
 
     def open_simulation_window(self):
         layout = self._get_simulation_window_layout()
         self._simulation_window = sg.Window(
             "Simulation Window",
             layout,
-            size=(800, 1000),
+            size=(800, 1100),
             finalize=True,
             background_color="white",
             element_justification="c",
@@ -81,7 +85,7 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
     def update_cumulative_rewards(self):
         cumulative_reward = self.mab_problem.history_of_cumulative_reward
         cumulative_reward_by_id = self.mab_problem.history_of_cumulative_reward_by_id()
-        figure = plt.figure(figsize=(5,4))
+        figure = plt.figure(figsize=(6, 3.5))
         plt.clf()
         plt.rcParams["axes.prop_cycle"] = plt.cycler(color=color_list)
         plt.ylim(0, self.max_simulation_steps)
@@ -105,7 +109,11 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
 
     def read_simulation_window(self):
         event, values = self._simulation_window.read(timeout=0.01)
-        if event == sg.WIN_CLOSED:  # if user closes window or clicks cancel
+        if event == "Play":
+            self._simulate = True
+        elif event == "Pause":
+            self._simulate = False
+        elif event == sg.WIN_CLOSED:  # if user closes window or clicks cancel
             self._simulation_window = None
             self._simulate = False
 
@@ -118,8 +126,8 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
         if self._simulation_window is not None:
             self.read_simulation_window()
 
-        if event == "Simulate":
-            self._simulate = True
+        if event == "Open Simulation":
+            self._simulate = False
             self.reset_environment()
             self.open_simulation_window()
 
@@ -149,9 +157,19 @@ class AlgorithmEmployingSimulatingGUIMixin(SimulatingGUIMixinABC):
         self._total_simulation_steps += 1
 
     def _get_simulation_window_layout(self):
-        col = [[sg.Canvas(key=self._cumulative_reward_fig_label)], [sg.Canvas(key=self._algorithm_stats_fig_label)], [sg.Button("Stop", size=(15, 1)), sg.Button("Restart", size=(15, 1))]],
+        play_img = self.get_byte_64_image(self.play_image_file, size=(50,50))
+        pause_img = self.get_byte_64_image(self.pause_image_file, size=(50,50))
+        col = [
+                  [sg.Canvas(key=self._cumulative_reward_fig_label)],
+                  [sg.Canvas(key=self._algorithm_stats_fig_label)],
+              ],
 
-        return [col]
+        return [
+            col, [
+                      sg.Button("Play", size=self.sim_button_size, image_data=play_img, button_color=CB_Lastminute),
+                      sg.Button("Pause", size=self.sim_button_size, image_data=pause_img, button_color=CB_Lastminute)
+                  ]
+        ]
 
     def update_algorithm_stats(self):
         figure = self._algorithm.plot_stats(self._plot_figsize)

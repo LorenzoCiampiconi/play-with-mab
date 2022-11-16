@@ -84,7 +84,7 @@ class BarcelonaMabGUI(BaseGUIABC):
     def get_play_layout(self):
         layout = [
             [self._get_layout_col_by_arm_id(arm_id) for arm_id in self.mab_problem.arms_ids],
-            [sg.Button("Simulate", size=(20, 1.3))],
+            [sg.Button("Open Simulation", size=(20, 1.3))],
         ]
 
         return layout
