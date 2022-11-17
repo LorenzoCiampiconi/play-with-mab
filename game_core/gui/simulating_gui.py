@@ -222,10 +222,10 @@ class AlgorithmEmployingSimulatingGUIMixin(SimulatingGUIMixinABC):
         self._total_simulation_steps += 1
 
     def _get_simulation_window_layout(self):
-        play_img = self.get_byte_64_image(self.play_image_file, size=(30, 30))
-        pause_img = self.get_byte_64_image(self.pause_image_file, size=(30, 30))
-        regret_img = self.get_byte_64_image(self.regret_image_file, size=(67, 67))
-        expectation_img = self.get_byte_64_image(self.expectation_image_file, size=(120, 67))
+        play_img = self.get_byte_64_image(self.play_image_file, size=(15, 15) )
+        pause_img = self.get_byte_64_image(self.pause_image_file, size=(15, 15))
+        regret_img = self.get_byte_64_image(self.regret_image_file, size=(53, 53))
+        expectation_img = self.get_byte_64_image(self.expectation_image_file, size=(103, 53))
         col = (
             [
                 [sg.Canvas(key=self._cumulative_reward_fig_label)],
