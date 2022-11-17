@@ -117,3 +117,67 @@ class BarcelonaMabGUI(BaseGUIABC):
     def window_layout_post_process(self, window):
         for arm_id in self.mab_problem.arms_ids:
             window[f"col_{arm_id}"].Widget.configure(borderwidth=2, relief=sg.RELIEF_SOLID)
+
+
+class BarcelonaMABGUINewLayout(BarcelonaMabGUI):
+    coin_img = img_path / "coin.png"
+    failure_img = img_path / "failure_resized.png"
+    coin_outcome_size = (50, 50)
+    fail_outcome_size = (55, 55)
+
+    def _get_layout_col_by_arm_id(self, arm_id) -> sg.Column:
+        slot_img = self.get_byte_64_image(self.slot_img_file, size=self.slot_img_size)
+        coin_img = self.get_byte_64_image(self.coin_img, size=self.coin_outcome_size)
+        empty_pocket_img = self.get_byte_64_image(self.failure_img, size=self.fail_outcome_size)
+
+        arm_col = [
+            [
+                sg.Text(
+                    f"Arm {arm_id}",
+                    font=self.results_font_size,
+                    background_color="#35654d",
+                    text_color=color_list[int(arm_id) - 1],
+                )
+            ],
+            [sg.Button(f"arm_{arm_id}", size=self.arm_button_size, image_data=slot_img, button_color="#35674d")],
+            [
+                sg.Button(f"_empty", size=(1, 1), image_data=coin_img, button_color="#35674d"),
+                sg.Text(
+                    "",
+                    key=f"arm_text{arm_id}_success",
+                    font=self.results_font_size,
+                    background_color="#35654d",
+                    justification="center",
+                ),
+            ],
+            [
+                sg.Button(f"_empty", size=(1, 1), image_data=empty_pocket_img, button_color="#35674d"),
+                sg.Text(
+                    "",
+                    key=f"arm_text{arm_id}_failure",
+                    font=self.results_font_size,
+                    background_color="#35654d",
+                    justification="center",
+                ),
+            ],
+        ]
+        return sg.Column(
+            arm_col,
+            vertical_alignment="t",
+            element_justification="c",
+            expand_x=True,
+            expand_y=True,
+            key=f"col_{arm_id}",
+            background_color="#35654d",
+        )
+
+    def update_on_screen_mab_history(self, window):
+        for arm_id in self.mab_problem.arms_ids:
+            arm_cumulative_reward = str(sum(self.mab_problem.rewards[arm_id]))
+            arm_cumulative_loss = str(
+                self.mab_problem.record[arm_id]["actions"]
+                - sum([1 if r > 0 else 0 for r in self.mab_problem.rewards[arm_id]])
+            )
+
+            window[f"arm_text{arm_id}_success"].update(arm_cumulative_reward)
+            window[f"arm_text{arm_id}_failure"].update(arm_cumulative_loss)

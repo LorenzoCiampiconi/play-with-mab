@@ -20,7 +20,7 @@ class MABProblem:
         self.__reset__()
 
     def __reset__(self):
-        self._rewards: Dict[int, List[float]] = defaultdict(list)
+        self._rewards: Dict[str, List[float]] = defaultdict(list)
         self._all_rewards = []
         self._cumulative_reward: float = 0
         self._cumulative_expected_reward = 0
@@ -30,6 +30,8 @@ class MABProblem:
         self._history_of_expected_cumulative_reward = []
         self._history_of_cumulative_reward_by_id = defaultdict(lambda: [])
         self.total_actions = 0
+        for arm in self.arms.values():
+            arm.reset_seed()
 
     def reset(self):
         self.__reset__()
@@ -67,11 +69,16 @@ class MABProblem:
 
     @property
     def regret_history(self):
-        return np.array(self.best_arm.get_cumulate_expected_value_for_steps(self.total_actions)) - np.array(self._history_of_expected_cumulative_reward)
+        return np.array(self.best_arm.get_cumulate_expected_value_for_steps(self.total_actions)) - np.array(
+            self._history_of_expected_cumulative_reward
+        )
 
     @property
     def regret(self):
-        return self.best_arm.get_cumulate_expected_value_for_steps(self.total_actions)[-1] - self._history_of_expected_cumulative_reward[-1]
+        return (
+            self.best_arm.get_cumulate_expected_value_for_steps(self.total_actions)[-1]
+            - self._history_of_expected_cumulative_reward[-1]
+        )
 
     def pull(self, arm_id, save_results=True):
         reward = round(self._arms[arm_id].sample(), 2)

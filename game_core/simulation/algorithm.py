@@ -20,7 +20,7 @@ class MABAlgorithm(metaclass=abc.ABCMeta):
 
     def __init__(self, *, mab_problem: MABProblem):
         self._mab_problem: MABProblem = mab_problem
-        self.set_mab_problem_best_arm() #todo refactor
+        self.set_mab_problem_best_arm()  # todo refactor
 
     @property
     def mab_problem(self):
@@ -46,8 +46,8 @@ class MABAlgorithm(metaclass=abc.ABCMeta):
 
     def plot_iteration_histogram(self, axs: plt.Axes, max_plays=100):
         axs.set_xlim(0, max_plays)
-        axs.set_xlabel("Time Steps", fontdict=dict(weight='bold'))
-        axs.set_ylabel("Arm", fontdict=dict(weight='bold'))
+        axs.set_xlabel("Time Steps", fontdict=dict(weight="bold"))
+        axs.set_ylabel("Arm", fontdict=dict(weight="bold"))
         axs.set_title("Number of plays per arm", loc="right", fontsize=10, fontweight="bold")
         labels = []
         plays = []
@@ -179,6 +179,7 @@ class ThompsonSampling(MABAlgorithm):
         for arm, beta_dist in beta_dists_of_arms.items():
             pdf = beta_dist.pdf(x)
             axs[0].plot(x, pdf, label=f"Arm {arm}", linewidth=3)
+            axs[0].fill_between(x, pdf, step="pre", alpha=0.3)
 
         axs[0].set_title("Beta Distributions of arms", loc="right", fontsize=10, fontweight="bold")
         axs[0].legend(frameon=False)

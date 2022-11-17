@@ -3,10 +3,11 @@ import time
 from typing import Optional, Type
 
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 from game_core.gui import img_path
-from game_core.gui.bmab_gui import BarcelonaMabGUI
+from game_core.gui.bmab_gui import BarcelonaMabGUI, BarcelonaMABGUINewLayout
 from game_core.simulation.algorithm import MABAlgorithm
 from game_core.statistic.mab import MABProblem
 from game_core.configs.configs import color_list, CB_Lastminute, CB_Gold
@@ -19,8 +20,8 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
     mab_problem: MABProblem
     play_image_file = img_path / "play_button.png"
     pause_image_file = img_path / "pause_button.png"
-    regret_image_file = img_path / "regret.png"
-    expectation_image_file = img_path / "expectations.png"
+    regret_image_file = img_path / "pepe_regret.png"
+    expectation_image_file = img_path / "pepe_expectation.png"
     sim_button_size = (2, 2)
 
     _cumulative_reward_fig_label = "cumulative_reward_fig"
@@ -36,6 +37,9 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
         self._plot_regret = False
         self._plot_expected_reward = False
         self._plot_figsize = (6, 6)
+        self._cumulative_reward_plot_zoom = 1
+        self._cumulative_reward_plot_x_shift = 0
+        self._cumulative_reward_plot_y_shift = 0
 
     @property
     def is_time_to_simulate(self):
@@ -43,6 +47,11 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
         return (
             self._last_simulation_step == 0 or now > self._simulation_interval + self._last_simulation_step
         ) and self._total_simulation_steps <= self.max_simulation_steps
+
+    def _reset_zoom(self):
+        self._cumulative_reward_plot_zoom = 1
+        self._cumulative_reward_plot_x_shift = 0
+        self._cumulative_reward_plot_y_shift = 0
 
     def start_simulation(self, simulation_step=max_simulation_steps):
         self.max_simulation_steps = simulation_step
@@ -59,7 +68,7 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
         return self._simulation_interval / 2
 
     def _get_simulation_window_layout(self):
-        return [[sg.Canvas(key=self._cumulative_reward_fig_label)]] # todo objectify
+        return [[sg.Canvas(key=self._cumulative_reward_fig_label)]]  # todo objectify
 
     def open_simulation_window(self):
         layout = self._get_simulation_window_layout()
@@ -88,22 +97,44 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
     def update_cumulative_rewards(self):
         cumulative_reward = self.mab_problem.history_of_cumulative_reward
         cumulative_reward_by_id = self.mab_problem.history_of_cumulative_reward_by_id()
-        figure = plt.figure(figsize=(6, 3.5))
+        figure = plt.figure(figsize=(7, 3))
         plt.clf()
         plt.rcParams["axes.prop_cycle"] = plt.cycler(color=color_list)
-        plt.ylim(0, 80)
-        plt.xlim(0, self.max_simulation_steps)
+
+        base_xlim = 0, self.max_simulation_steps
+        base_ylim = (0, 80)
+
+        xlim = np.divide(
+            (
+                base_xlim[0] + self._cumulative_reward_plot_x_shift / self._cumulative_reward_plot_zoom,
+                base_xlim[1] + self._cumulative_reward_plot_x_shift / self._cumulative_reward_plot_zoom,
+            ),
+            self._cumulative_reward_plot_zoom,
+        )
+        ylim = np.divide(
+            (
+                base_ylim[0] + self._cumulative_reward_plot_y_shift / self._cumulative_reward_plot_zoom,
+                base_ylim[1] + self._cumulative_reward_plot_y_shift / self._cumulative_reward_plot_zoom,
+            ),
+            self._cumulative_reward_plot_zoom,
+        )
+
+        plt.xlim(xlim)
+        plt.ylim(ylim)
+
         for arm in self.mab_problem.arms_ids:
             plt.plot(cumulative_reward_by_id[arm], label=f"Arm {arm}", linewidth=2.5)
 
         plt.plot(cumulative_reward, label="Total", linewidth=3)
 
-        expected_reward = self.mab_problem.best_arm.get_cumulate_expected_value_for_steps(self.mab_problem.total_actions)
+        expected_reward = self.mab_problem.best_arm.get_cumulate_expected_value_for_steps(
+            self.mab_problem.total_actions
+        )
         if self._plot_expected_reward and self.mab_problem.best_arm is not None:
-            plt.plot(expected_reward, label=f"Expected reward", linewidth=2.5, color=CB_Gold)
+            plt.plot(expected_reward, label=f"Expected reward", linewidth=3, color=CB_Gold)
         if self._plot_regret and self.mab_problem.best_arm is not None:
             regret = self.mab_problem.regret_history
-            plt.plot(regret, label=f"Regret", linewidth=2.5)
+            plt.plot(regret, ":", label=f"Regret", linewidth=4)
 
         plt.title("Cumulative Rewards", fontsize="12", fontweight="bold", color=CB_Lastminute)
         plt.xlabel("Time Steps", fontweight="bold")
@@ -129,6 +160,23 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
             self.update_simulation_window()
         elif event == "Expectation":
             self._plot_expected_reward = not self._plot_expected_reward
+            self.update_simulation_window()
+        elif event == "+zoom":
+            self._cumulative_reward_plot_zoom += 1
+            self.update_simulation_window()
+        elif event == "-zoom":
+            self._cumulative_reward_plot_zoom -= (
+                1 if self._cumulative_reward_plot_zoom > 1 else self._cumulative_reward_plot_zoom / 10
+            )
+            self.update_simulation_window()
+        elif event == "reset-zoom":
+            self._reset_zoom()
+            self.update_simulation_window()
+        elif event == "+x":
+            self._cumulative_reward_plot_x_shift += 10
+            self.update_simulation_window()
+        elif event == "-x":
+            self._cumulative_reward_plot_x_shift -= 10
             self.update_simulation_window()
         elif event == sg.WIN_CLOSED:  # if user closes window or clicks cancel
             self._simulation_window = None
@@ -178,19 +226,28 @@ class AlgorithmEmployingSimulatingGUIMixin(SimulatingGUIMixinABC):
         pause_img = self.get_byte_64_image(self.pause_image_file, size=(30, 30))
         regret_img = self.get_byte_64_image(self.regret_image_file, size=(67, 67))
         expectation_img = self.get_byte_64_image(self.expectation_image_file, size=(120, 67))
-        col = [
-                  [sg.Canvas(key=self._cumulative_reward_fig_label)],
-                  [sg.Canvas(key=self._algorithm_stats_fig_label)],
-              ],
+        col = (
+            [
+                [sg.Canvas(key=self._cumulative_reward_fig_label)],
+                [
+                    sg.Button("+zoom", button_color=CB_Lastminute),
+                    sg.Button("-zoom", button_color=CB_Lastminute),
+                    sg.Button("reset-zoom", button_color=CB_Lastminute),
+                    sg.Button("+x", button_color=CB_Lastminute),
+                    sg.Button("-x", button_color=CB_Lastminute),
+                ],
+                [sg.Canvas(key=self._algorithm_stats_fig_label)],
+            ],
+        )
 
         return [
-            col, [
-                      sg.Button("Play", size=self.sim_button_size, image_data=play_img, button_color=CB_Lastminute),
-                      sg.Button("Pause", size=self.sim_button_size, image_data=pause_img, button_color=CB_Lastminute),
-                      # sg.Button("Regret",  button_color=CB_Lastminute),
-                      sg.Button("Regret", image_data=regret_img, button_color=CB_Lastminute),
-                      sg.Button("Expectation",  image_data=expectation_img, button_color=CB_Lastminute),
-                  ]
+            col,
+            [
+                sg.Button("Play", size=self.sim_button_size, image_data=play_img, button_color=CB_Lastminute),
+                sg.Button("Pause", size=self.sim_button_size, image_data=pause_img, button_color=CB_Lastminute),
+                sg.Button("Regret", image_data=regret_img, button_color=CB_Lastminute),
+                sg.Button("Expectation", image_data=expectation_img, button_color=CB_Lastminute),
+            ],
         ]
 
     def update_algorithm_stats(self):
@@ -205,5 +262,5 @@ class AlgorithmEmployingSimulatingGUIMixin(SimulatingGUIMixinABC):
         self.update_algorithm_stats()
 
 
-class BarcelonaMABAlgorithmSimulatingGUI(AlgorithmEmployingSimulatingGUIMixin, BarcelonaMabGUI):
+class BarcelonaMABAlgorithmSimulatingGUI(AlgorithmEmployingSimulatingGUIMixin, BarcelonaMABGUINewLayout):
     ...
