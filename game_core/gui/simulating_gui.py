@@ -134,7 +134,7 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
             plt.plot(expected_reward, label=f"Expected reward", linewidth=3, color=CB_Gold)
         if self._plot_regret and self.mab_problem.best_arm is not None:
             regret = self.mab_problem.regret_history
-            plt.plot(regret, ":", label=f"Regret", linewidth=4)
+            plt.plot(regret, label=f"Regret", linewidth=4)
 
         plt.title("Cumulative Rewards", fontsize="12", fontweight="bold", color=CB_Lastminute)
         plt.xlabel("Time Steps", fontweight="bold")

@@ -8,7 +8,7 @@ import PySimpleGUI as sg
 
 
 class BaseGUIABC(metaclass=abc.ABCMeta):
-    play_window_size = (1000, 800)
+    play_window_size = (1000, 600)
 
     @staticmethod
     def collapse(layout, key):
