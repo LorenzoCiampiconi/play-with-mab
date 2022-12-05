@@ -4,4 +4,4 @@ from game_core.simulation.algorithm import RandomAlgorithm, UpperConfidenceBound
 if __name__ == "__main__":
     algorithm_class = ThompsonSampling
     gui = BarcelonaMABAlgorithmSimulatingGUI(simulate=False, algorithm_class=algorithm_class, algorithm_kwargs={})
-    gui.play_window_process()
+    gui.menu_window_process()

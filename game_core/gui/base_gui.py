@@ -1,4 +1,5 @@
 import abc
+import logging
 from pathlib import Path
 from typing import Union, Tuple
 
@@ -6,9 +7,11 @@ import io
 from PIL import Image
 import PySimpleGUI as sg
 
+logger = logging.getLogger(__name__)
 
 class BaseGUIABC(metaclass=abc.ABCMeta):
     play_window_size = (1000, 600)
+    menu_window_size = (1000, 600)
 
     @staticmethod
     def collapse(layout, key):
@@ -48,6 +51,49 @@ class BaseGUIABC(metaclass=abc.ABCMeta):
     @property
     def timeout(self):
         return None
+
+    def switch_mab_algorithm(self):
+        logger.warning("Not Implemented feature")
+
+    def get_menu_layout(self):
+        layout = [
+            [
+                sg.Button("Play", size=(20, 1.3)),
+                sg.Button("Switch MAB Algorithm", size=(20, 1.3)),
+                sg.Button("Algorithm self selection", size=(20, 1.3))
+            ],
+        ]
+
+        return layout
+
+    def get_menu_window(self) -> sg.Window:
+        layout = self.get_menu_layout()
+
+        window = sg.Window(
+            "Get rich with our MAB - Made with <3 by Lore & Luke",
+            layout,
+            element_justification="c",
+            size=self.menu_window_size,
+            finalize=True,
+            resizable=True,
+        )
+
+        return window
+
+    def menu_window_process(self):
+        window = self.get_menu_window()
+        while True:
+            event, values = window.read()
+            if event == sg.WIN_CLOSED or event == "Cancel":  # if user closes window or clicks cancel
+                break
+
+            elif event == "Play":
+                window.close()
+                self.play_window_process()
+                self.menu_window_process()
+
+            elif event == "Switch MAB Algorithm":
+                self.switch_mab_algorithm()
 
     def play_window_process(self):
         self.prepare_for_play()
