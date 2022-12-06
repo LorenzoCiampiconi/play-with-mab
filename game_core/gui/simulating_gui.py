@@ -290,7 +290,3 @@ class AlgorithmEmployingSimulatingGUIMixin(SimulatingGUIMixinABC):
     def update_simulation_window(self):
         super().update_simulation_window()
         self.update_algorithm_stats()
-
-
-class BarcelonaMABAlgorithmSimulatingGUI(AlgorithmEmployingSimulatingGUIMixin, BarcelonaMABGUINewLayout):
-    ...
