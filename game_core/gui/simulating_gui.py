@@ -1,6 +1,6 @@
 import abc
 import time
-from typing import Optional, Type
+from typing import Optional, Type, Dict
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -8,7 +8,13 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 from game_core.gui import img_path
 from game_core.gui.bmab_gui import BarcelonaMabGUI, BarcelonaMABGUINewLayout
-from game_core.simulation.algorithm import MABAlgorithm
+from game_core.simulation.algorithm import (
+    MABAlgorithm,
+    UpperConfidenceBound1,
+    RandomAlgorithm,
+    ThompsonSampling,
+    EpsilonGreedy,
+)
 from game_core.statistic.mab import MABProblem
 from game_core.configs.configs import color_list, CB_Lastminute, CB_Gold
 
@@ -205,10 +211,34 @@ class AlgorithmEmployingSimulatingGUIMixin(SimulatingGUIMixinABC):
     mab_problem: MABProblem
     _algorithm_stats_fig_label = "_algorithm_stats_fig"
 
-    def __init__(self, algorithm_class: Type[MABAlgorithm], algorithm_kwargs, **kwargs):
+    algorithm_class_dict: Dict[str, Type[MABAlgorithm]] = dict(
+        epsilon_greedy=EpsilonGreedy,
+        random_policy=RandomAlgorithm,
+        thompson_sampling=ThompsonSampling,
+        ucb_1=UpperConfidenceBound1,
+    )
+
+    def __init__(self, algorithm_type: str, algorithm_kwargs: Optional[dict] = None, **kwargs):
         super().__init__(**kwargs)
         algorithm_kwargs["mab_problem"] = self.mab_problem
-        self._algorithm = algorithm_class(**algorithm_kwargs)
+
+        self.__set_mab_algorithm__(algorithm_type, algorithm_kwargs)
+
+    def __set_mab_algorithm__(self, algorithm_type, algorithm_kwargs: Optional[dict] = None):
+        algorithm_class = self.algorithm_class_dict[algorithm_type]
+        self._algorithm_type = algorithm_type
+
+        if algorithm_kwargs is None:
+            algorithm_kwargs = algorithm_class.default_kwargs
+
+        self._algorithm: MABAlgorithm = algorithm_class(**algorithm_kwargs)
+
+    def set_mab_algorithm(self, algorithm_type, algorithm_kwargs: Optional[dict] = None):
+        self.__set_mab_algorithm__(algorithm_type, algorithm_kwargs)
+
+    @property
+    def algorithm_type(self) -> str:
+        return self._algorithm_type
 
     def simulate(self, window):
         print(f"asking {self._algorithm.algorithm_label} algorithm to play... {self._algorithm.info()}")
@@ -222,7 +252,7 @@ class AlgorithmEmployingSimulatingGUIMixin(SimulatingGUIMixinABC):
         self._total_simulation_steps += 1
 
     def _get_simulation_window_layout(self):
-        play_img = self.get_byte_64_image(self.play_image_file, size=(15, 15) )
+        play_img = self.get_byte_64_image(self.play_image_file, size=(15, 15))
         pause_img = self.get_byte_64_image(self.pause_image_file, size=(15, 15))
         regret_img = self.get_byte_64_image(self.regret_image_file, size=(53, 53))
         expectation_img = self.get_byte_64_image(self.expectation_image_file, size=(103, 53))

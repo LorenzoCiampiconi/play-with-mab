@@ -9,9 +9,14 @@ import PySimpleGUI as sg
 
 logger = logging.getLogger(__name__)
 
+
 class BaseGUIABC(metaclass=abc.ABCMeta):
     play_window_size = (1000, 600)
     menu_window_size = (1000, 600)
+
+    play_event = "Play"
+    switch_mab_algorithm_event = "Switch MAB Algorithm"
+    algorithm_self_selection_event = "Algorithm self selection"
 
     @staticmethod
     def collapse(layout, key):
@@ -52,15 +57,20 @@ class BaseGUIABC(metaclass=abc.ABCMeta):
     def timeout(self):
         return None
 
+    @property
+    @abc.abstractmethod
+    def algorithm_type(self) -> str:
+        pass
+
     def switch_mab_algorithm(self):
         logger.warning("Not Implemented feature")
 
     def get_menu_layout(self):
         layout = [
             [
-                sg.Button("Play", size=(20, 1.3)),
-                sg.Button("Switch MAB Algorithm", size=(20, 1.3)),
-                sg.Button("Algorithm self selection", size=(20, 1.3))
+                sg.Button(BaseGUIABC.play_event, size=(20, 1.3)),
+                sg.Button(BaseGUIABC.switch_mab_algorithm_event, size=(20, 1.3)),
+                sg.Button(BaseGUIABC.algorithm_self_selection_event, size=(20, 1.3)),
             ],
         ]
 
@@ -87,12 +97,12 @@ class BaseGUIABC(metaclass=abc.ABCMeta):
             if event == sg.WIN_CLOSED or event == "Cancel":  # if user closes window or clicks cancel
                 break
 
-            elif event == "Play":
+            elif event == BaseGUIABC.play_event:
                 window.close()
                 self.play_window_process()
                 self.menu_window_process()
 
-            elif event == "Switch MAB Algorithm":
+            elif event == BaseGUIABC.switch_mab_algorithm_event:
                 self.switch_mab_algorithm()
 
     def play_window_process(self):

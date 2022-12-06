@@ -1,3 +1,4 @@
+import logging
 from typing import Union, Tuple, Optional
 
 import io
@@ -9,15 +10,25 @@ from game_core.gui.base_gui import BaseGUIABC
 from game_core.statistic.mab import MABProblem
 from game_core.configs.configs import color_list
 
+logger = logging.getLogger(__name__)
+
 
 class BarcelonaMabGUI(BaseGUIABC):
-    slot_img_file = img_path / "slot.png"
+    @property
+    def algorithm_type(self) -> str:
+        logger.warning("Not Implemented feature")
+        return ""
+
     arm_button_size = (0.1, 0.1)
-    slot_img_size = (300, 200)
     results_font_size = ("helvetica", 25)
+    slot_img_file = img_path / "slot.png"
+    slot_img_size = (300, 200)
+
     binary_win_label = "$"
     binary_loss_label = "X"
     mapping = {0: binary_loss_label, 1: binary_win_label}
+
+    open_simulation_event = "Open Simulation"
 
     def __init__(self, *, configuration=None, max_length_col: Optional[int] = 14, **kwargs):
         super().__init__(**kwargs)
@@ -84,7 +95,7 @@ class BarcelonaMabGUI(BaseGUIABC):
     def get_play_layout(self):
         layout = [
             [self._get_layout_col_by_arm_id(arm_id) for arm_id in self.mab_problem.arms_ids],
-            [sg.Button("Open Simulation", size=(20, 1.3))],
+            [sg.Button(BarcelonaMabGUI.open_simulation_event, size=(20, 1.3))],
         ]
 
         return layout
