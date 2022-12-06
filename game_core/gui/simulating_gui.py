@@ -1,19 +1,21 @@
 import abc
 import time
-from typing import Optional, Type, Dict
+from itertools import cycle
+from typing import Optional, Type, Dict, Callable
 
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 from game_core.gui import img_path
-from game_core.gui.bmab_gui import BarcelonaMabGUI, BarcelonaMABGUINewLayout
-from game_core.simulation.algorithm import (
+from game_core.gui.base_gui import BaseGUIABC
+from game_core.algorithm import (
     MABAlgorithm,
     UpperConfidenceBound1,
     RandomAlgorithm,
     ThompsonSampling,
     EpsilonGreedy,
+    UpperConfidenceBound1Tuned,
 )
 from game_core.statistic.mab import MABProblem
 from game_core.configs.configs import color_list, CB_Lastminute, CB_Gold
@@ -22,6 +24,8 @@ import PySimpleGUI as sg
 
 
 class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
+    get_byte_64_image: Callable
+
     max_simulation_steps = 100
     mab_problem: MABProblem
     play_image_file = img_path / "play_button.png"
@@ -31,6 +35,16 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
     sim_button_size = (2, 2)
 
     _cumulative_reward_fig_label = "cumulative_reward_fig"
+
+    expectation_simulation_event = "Expectation"
+    play_simulation_event = "Play"
+    pause_simulation_event = "Pause"
+    regret_simulation_event = "Regret"
+    p_zoom_event = "+zoom"
+    m_zoom_event = "-zoom"
+    reset_zoom_event = "reset-zoom"
+    shift_right_x_event = "+x"
+    shift_left_x_event = "-x"
 
     def __init__(self, *, simulate: Optional[bool] = False, simulation_interval=1, **kwargs):
         super().__init__(**kwargs)
@@ -157,31 +171,31 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
 
     def read_simulation_window(self):
         event, values = self._simulation_window.read(timeout=0.01)
-        if event == "Play":
+        if event == self.play_simulation_event:
             self._simulate = True
-        elif event == "Pause":
+        elif event == self.pause_simulation_event:
             self._simulate = False
-        elif event == "Regret":
+        elif event == self.regret_simulation_event:
             self._plot_regret = not self._plot_regret
             self.update_simulation_window()
-        elif event == "Expectation":
+        elif event == self.expectation_simulation_event:
             self._plot_expected_reward = not self._plot_expected_reward
             self.update_simulation_window()
-        elif event == "+zoom":
+        elif event == self.p_zoom_event:
             self._cumulative_reward_plot_zoom += 1
             self.update_simulation_window()
-        elif event == "-zoom":
+        elif event == self.m_zoom_event:
             self._cumulative_reward_plot_zoom -= (
                 1 if self._cumulative_reward_plot_zoom > 1 else self._cumulative_reward_plot_zoom / 10
             )
             self.update_simulation_window()
-        elif event == "reset-zoom":
+        elif event == self.reset_zoom_event:
             self._reset_zoom()
             self.update_simulation_window()
-        elif event == "+x":
+        elif event == self.shift_right_x_event:
             self._cumulative_reward_plot_x_shift += 10
             self.update_simulation_window()
-        elif event == "-x":
+        elif event == self.shift_left_x_event:
             self._cumulative_reward_plot_x_shift -= 10
             self.update_simulation_window()
         elif event == sg.WIN_CLOSED:  # if user closes window or clicks cancel
@@ -197,7 +211,7 @@ class SimulatingGUIMixinABC(metaclass=abc.ABCMeta):
         if self._simulation_window is not None:
             self.read_simulation_window()
 
-        if event == "Open Simulation":
+        if event == BaseGUIABC.open_simulation_event:
             self._simulate = False
             self.reset_environment()
             self.open_simulation_window()
@@ -216,20 +230,22 @@ class AlgorithmEmployingSimulatingGUIMixin(SimulatingGUIMixinABC):
         random_policy=RandomAlgorithm,
         thompson_sampling=ThompsonSampling,
         ucb_1=UpperConfidenceBound1,
+        ucb_1_tuned=UpperConfidenceBound1Tuned,
     )
 
     def __init__(self, algorithm_type: str, algorithm_kwargs: Optional[dict] = None, **kwargs):
         super().__init__(**kwargs)
         algorithm_kwargs["mab_problem"] = self.mab_problem
-
+        self._algorithm_types_cycler = cycle(list(self.algorithm_class_dict.keys()))
         self.__set_mab_algorithm__(algorithm_type, algorithm_kwargs)
 
     def __set_mab_algorithm__(self, algorithm_type, algorithm_kwargs: Optional[dict] = None):
         algorithm_class = self.algorithm_class_dict[algorithm_type]
-        self._algorithm_type = algorithm_type
+        self._algorithm_type = algorithm_class.algorithm_label
 
         if algorithm_kwargs is None:
             algorithm_kwargs = algorithm_class.default_kwargs
+            algorithm_kwargs["mab_problem"] = self.mab_problem
 
         self._algorithm: MABAlgorithm = algorithm_class(**algorithm_kwargs)
 
@@ -240,10 +256,14 @@ class AlgorithmEmployingSimulatingGUIMixin(SimulatingGUIMixinABC):
     def algorithm_type(self) -> str:
         return self._algorithm_type
 
+    def switch_mab_algorithm(self):
+        next_mab_algorithm = next(self._algorithm_types_cycler)
+        self.set_mab_algorithm(next_mab_algorithm)
+
     def simulate(self, window):
         print(f"asking {self._algorithm.algorithm_label} algorithm to play... {self._algorithm.info()}")
 
-        if self._algorithm._mab_problem is not self.mab_problem:
+        if self._algorithm.mab_problem is not self.mab_problem:
             self._algorithm._mab_problem = self.mab_problem
 
         arm = f"arm_{self._algorithm.select_arm()}"
@@ -260,11 +280,11 @@ class AlgorithmEmployingSimulatingGUIMixin(SimulatingGUIMixinABC):
             [
                 [sg.Canvas(key=self._cumulative_reward_fig_label)],
                 [
-                    sg.Button("+zoom", button_color=CB_Lastminute),
-                    sg.Button("-zoom", button_color=CB_Lastminute),
-                    sg.Button("reset-zoom", button_color=CB_Lastminute),
-                    sg.Button("+x", button_color=CB_Lastminute),
-                    sg.Button("-x", button_color=CB_Lastminute),
+                    sg.Button(self.p_zoom_event, button_color=CB_Lastminute),
+                    sg.Button(self.m_zoom_event, button_color=CB_Lastminute),
+                    sg.Button(self.reset_zoom_event, button_color=CB_Lastminute),
+                    sg.Button(self.shift_right_x_event, button_color=CB_Lastminute),
+                    sg.Button(self.shift_left_x_event, button_color=CB_Lastminute),
                 ],
                 [sg.Canvas(key=self._algorithm_stats_fig_label)],
             ],
@@ -273,10 +293,26 @@ class AlgorithmEmployingSimulatingGUIMixin(SimulatingGUIMixinABC):
         return [
             col,
             [
-                sg.Button("Play", size=self.sim_button_size, image_data=play_img, button_color=CB_Lastminute),
-                sg.Button("Pause", size=self.sim_button_size, image_data=pause_img, button_color=CB_Lastminute),
-                sg.Button("Regret", image_data=regret_img, button_color=CB_Lastminute),
-                sg.Button("Expectation", image_data=expectation_img, button_color=CB_Lastminute),
+                sg.Button(
+                    SimulatingGUIMixinABC.play_simulation_event,
+                    size=self.sim_button_size,
+                    image_data=play_img,
+                    button_color=CB_Lastminute,
+                ),
+                sg.Button(
+                    SimulatingGUIMixinABC.pause_simulation_event,
+                    size=self.sim_button_size,
+                    image_data=pause_img,
+                    button_color=CB_Lastminute,
+                ),
+                sg.Button(
+                    SimulatingGUIMixinABC.regret_simulation_event, image_data=regret_img, button_color=CB_Lastminute
+                ),
+                sg.Button(
+                    SimulatingGUIMixinABC.expectation_simulation_event,
+                    image_data=expectation_img,
+                    button_color=CB_Lastminute,
+                ),
             ],
         ]
 

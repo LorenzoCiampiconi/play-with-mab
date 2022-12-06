@@ -14,9 +14,12 @@ class BaseGUIABC(metaclass=abc.ABCMeta):
     play_window_size = (1000, 600)
     menu_window_size = (1000, 600)
 
+    algorithm_self_selection_event = "Algorithm self selection"
     play_event = "Play"
     switch_mab_algorithm_event = "Switch MAB Algorithm"
-    algorithm_self_selection_event = "Algorithm self selection"
+    open_simulation_event = "Open Simulation"
+
+    mab_algorithm_text_label = "algorithm_type_text"
 
     @staticmethod
     def collapse(layout, key):
@@ -62,8 +65,9 @@ class BaseGUIABC(metaclass=abc.ABCMeta):
     def algorithm_type(self) -> str:
         pass
 
+    @abc.abstractmethod
     def switch_mab_algorithm(self):
-        logger.warning("Not Implemented feature")
+        pass
 
     def get_menu_layout(self):
         layout = [
@@ -71,6 +75,14 @@ class BaseGUIABC(metaclass=abc.ABCMeta):
                 sg.Button(BaseGUIABC.play_event, size=(20, 1.3)),
                 sg.Button(BaseGUIABC.switch_mab_algorithm_event, size=(20, 1.3)),
                 sg.Button(BaseGUIABC.algorithm_self_selection_event, size=(20, 1.3)),
+            ],
+            [
+                sg.Text(
+                    "",
+                    key=BaseGUIABC.mab_algorithm_text_label,
+                    background_color="#35654d",
+                    justification="center",
+                )
             ],
         ]
 
@@ -88,6 +100,8 @@ class BaseGUIABC(metaclass=abc.ABCMeta):
             resizable=True,
         )
 
+        window[self.mab_algorithm_text_label].update(self.algorithm_type)
+
         return window
 
     def menu_window_process(self):
@@ -104,6 +118,7 @@ class BaseGUIABC(metaclass=abc.ABCMeta):
 
             elif event == BaseGUIABC.switch_mab_algorithm_event:
                 self.switch_mab_algorithm()
+                window[self.mab_algorithm_text_label].update(self.algorithm_type)
 
     def play_window_process(self):
         self.prepare_for_play()

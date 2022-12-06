@@ -14,11 +14,6 @@ logger = logging.getLogger(__name__)
 
 
 class BarcelonaMabGUI(BaseGUIABC):
-    @property
-    def algorithm_type(self) -> str:
-        logger.warning("Not Implemented feature")
-        return ""
-
     arm_button_size = (0.1, 0.1)
     results_font_size = ("helvetica", 25)
     slot_img_file = img_path / "slot.png"
@@ -27,8 +22,6 @@ class BarcelonaMabGUI(BaseGUIABC):
     binary_win_label = "$"
     binary_loss_label = "X"
     mapping = {0: binary_loss_label, 1: binary_win_label}
-
-    open_simulation_event = "Open Simulation"
 
     def __init__(self, *, configuration=None, max_length_col: Optional[int] = 14, **kwargs):
         super().__init__(**kwargs)
@@ -128,6 +121,14 @@ class BarcelonaMabGUI(BaseGUIABC):
     def window_layout_post_process(self, window):
         for arm_id in self.mab_problem.arms_ids:
             window[f"col_{arm_id}"].Widget.configure(borderwidth=2, relief=sg.RELIEF_SOLID)
+
+    def switch_mab_algorithm(self):
+        logger.warning("Not Implemented feature")
+
+    @property
+    def algorithm_type(self) -> str:
+        logger.warning("Not Implemented feature")
+        return ""
 
 
 class BarcelonaMABGUINewLayout(BarcelonaMabGUI):
