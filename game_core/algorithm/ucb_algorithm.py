@@ -19,13 +19,18 @@ class UpperConfidenceBound1(MABAlgorithm):
         if reset:
             self.mab_problem.reset()
 
+    def _compute_c(self, arm):
+        arm_record = self.mab_problem.record[arm]
+        n = arm_record["actions"]
+        return np.sqrt(2 * np.log(self.mab_problem.total_actions) / n)
+
     def _update_upper_confidence_bound(self, arm):
         arm_record = self.mab_problem.record[arm]
         n = arm_record["actions"]
 
         if n != 0:
-            sample_mean = arm_record["reward"] / arm_record["actions"] if n != 0 else np.inf
-            c = np.sqrt(2 * np.log(self.mab_problem.total_actions) / arm_record["actions"])
+            sample_mean = arm_record["reward"] / n
+            c = self._compute_c(arm)
 
             ucb = sample_mean + c
             self._upper_confidence_bounds[arm] = ucb
@@ -55,5 +60,15 @@ class UpperConfidenceBound1(MABAlgorithm):
     def info(self) -> str:
         return f"INFO - (bounds for arms are {self._upper_confidence_bounds})"
 
-    def plot_stats(self, figsize, max_plays=100) -> plt.Figure:
-        return plt.figure()
+
+class UpperConfidenceBound1Tuned(UpperConfidenceBound1):
+    algorithm_label = "UCB-1-tuned"
+
+    def _compute_c(self, arm):
+        arm_record = self.mab_problem.record[arm]
+        n = arm_record["actions"]
+        sample_mean = arm_record["reward"] / n
+
+        variance_bound = arm_record["reward_squared"] / n - sample_mean**2
+        variance_bound += np.sqrt(2 * np.log(self.mab_problem.total_actions.total_actions) / n)
+        return np.sqrt(np.min([variance_bound, 1 / 4]) * np.log(self.mab_problem.total_actions) / n)
