@@ -14,13 +14,11 @@ from game_core.configs.configs import CB_Lastminute
 class ThompsonSampling(MABAlgorithm):
     algorithm_label = "Thompson Sampling"
 
-    def __init__(self, reset=False, **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.beta_distributions_parameters: Dict[str, Tuple[int, int]] = defaultdict(lambda: (1, 1))
         self._last_played_arm: Union[None, str] = None
         self.iteration = 0
-        if reset:
-            self.mab_problem.reset()
 
     def _update_beta_distributions(self):
         for arm in self.mab_problem.arms_ids:

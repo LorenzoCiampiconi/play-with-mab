@@ -11,13 +11,10 @@ from game_core.algorithm.base_algorithm import MABAlgorithm
 class UpperConfidenceBound1(MABAlgorithm):
     algorithm_label = "UCB-1"
 
-    def __init__(self, reset=False, **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._last_played_arm: Union[None, str] = None
         self._upper_confidence_bounds: Dict[str, Union[float]] = defaultdict(float)
-
-        if reset:
-            self.mab_problem.reset()
 
     def _compute_c(self, arm):
         arm_record = self.mab_problem.record[arm]

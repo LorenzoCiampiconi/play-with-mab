@@ -13,8 +13,10 @@ class MABAlgorithm(metaclass=abc.ABCMeta):
 
     default_kwargs = {}
 
-    def __init__(self, *, mab_problem: MABProblem):
+    def __init__(self, *, reset: bool = False, mab_problem: MABProblem):
         self._mab_problem: MABProblem = mab_problem
+        if reset:
+            self.mab_problem.reset()
         self.set_mab_problem_best_arm()  # todo refactor
 
     @property
