@@ -7,8 +7,8 @@ You can either play the "MAB envinroment" yourself, by playing with the availabl
 
  - Thompson Sampling
  - Upper Confidence Bound 1 (tuned)
- - epsilon-greedy
- - random guess
+ - Epsilon-Greedy
+ - Random Policy
  
 Parameter updates of the algorithm will be shown at each time steps until convergence is reached. Currently there's a fixed time horizon of 100 steps.
 
